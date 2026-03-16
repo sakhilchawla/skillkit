@@ -141,6 +141,20 @@ Works with any tool that supports the Agent Skills standard:
 
 Claude Code · Codex CLI · Gemini CLI · Cursor · VS Code · GitHub Copilot · Windsurf · Aider · OpenCode · and 18+ more
 
+## Documentation
+
+| Guide | What it covers |
+|-------|---------------|
+| [Getting Started](docs/GUIDE_OVERVIEW.md) | What skillkit is, what Agent Skills are, your first 5 minutes |
+| [Linting Skills](docs/GUIDE_LINT.md) | All 15 rules explained with examples, presets, CI/CD setup |
+| [Testing Skills](docs/GUIDE_TEST.md) | YAML test format, assertions, fixtures, mock vs real mode |
+| [Benchmarking Skills](docs/GUIDE_BENCH.md) | Precision/recall scoring, A/B comparison, regression tracking |
+| [Adapting Skills](docs/GUIDE_ADAPT.md) | Stack detection, templates, generating project-specific skills |
+| [Creating Skills](docs/GUIDE_INIT.md) | Scaffolding new skills, naming tips, full workflow |
+| [Writing Excellent Skills](docs/WRITING_SKILLS.md) | Best practices, anti-patterns, quality rubric |
+| [Architecture](docs/ARCHITECTURE.md) | Package design, data flow, extension points |
+| [Contributing](docs/CONTRIBUTING.md) | How to add rules, fixtures, templates |
+
 ## Contributing
 
 See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
