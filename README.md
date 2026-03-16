@@ -164,7 +164,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 | Version | Features | Status |
 |---------|----------|--------|
 | v0.1 | `lint` (15 rules), `init`, core parser, CI | Shipped |
-| v0.2 | `test` with YAML scenarios, mock mode, 8 assertion types, 139 tests | Shipped |
+| v0.2 | `test` with YAML scenarios, mock mode, 8 assertion types | Shipped |
 | v0.3 | `bench` with quality scoring and regression tracking | Shipped |
 | v0.4 | `adapt` with repo scanning, stack detection, and skill generation | **Current** |
 | v1.0 | Plugin API, CI/CD integration, cross-tool testing | Planned |
@@ -197,7 +197,7 @@ cd skillkit
 npm install
 
 npm run build          # TypeScript build (tsc --build)
-npm test               # Run 139+ unit tests (vitest)
+npm test               # Run 175+ unit tests (vitest)
 npm run test:watch     # Watch mode
 npm run test:coverage  # Coverage report
 npm run lint:self      # Lint the reference skills

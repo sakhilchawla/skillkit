@@ -26,11 +26,11 @@ npm run clean          # Clean all build artifacts
 npm run build && npm test && npm run lint:self
 ```
 
-You should see: build passes, 139+ tests pass, 6 reference skills lint clean.
+You should see: build passes, 175+ tests pass, 6 reference skills lint clean.
 
 ## Test Infrastructure
 
-Tests use [vitest](https://vitest.dev/) and live next to the source code. Currently 139 tests across 9 test files:
+Tests use [vitest](https://vitest.dev/) and live next to the source code. Currently 175+ tests across 12 test files:
 
 ```
 packages/core/src/__tests__/
@@ -49,6 +49,9 @@ packages/benchmarks/src/__tests__/
   scorer.test.ts           # Precision/recall/F1 scoring
   tracker.test.ts          # Regression detection
   comparator.test.ts       # A/B skill comparison
+
+packages/adapters/src/__tests__/
+  (tests for stack detection, convention detection, and template rendering)
 ```
 
 **When adding code, add tests.** Every lint rule needs at least:
@@ -78,6 +81,66 @@ export const myRule: LintRule = {
 3. Add to appropriate preset(s) in `packages/linter/src/presets/`
 4. Write tests in `packages/linter/src/__tests__/rules.test.ts` — add a `describe` block
 5. Verify: `npm test && npm run lint:self`
+
+## Adding a New Detector
+
+Stack and convention detectors live in `packages/adapters/src/detectors/`.
+
+1. Open `packages/adapters/src/detectors/stackDetector.ts` to add a new detection rule:
+   - Add a new entry to `NODE_DEP_RULES` for dependency-based detection
+   - Or add a new file-existence check in the `detectStack` function
+2. Each detection should produce a `DetectionSignal` with a confidence score (0-1)
+3. Add tests in `packages/adapters/src/__tests__/`
+4. Verify: `npm test`
+
+Example — detecting a new framework:
+
+```typescript
+// In NODE_DEP_RULES array:
+{ pattern: 'remix', category: 'framework', field: 'framework', value: 'remix', confidence: 0.9 },
+```
+
+## Adding a New Template
+
+Templates define the skill structure that gets customized per-project.
+
+1. Create `packages/adapters/src/templates/createMyThing.ts`:
+```typescript
+import type { SkillTemplate } from '../types.js';
+
+export const createMyThingTemplate: SkillTemplate = {
+  name: 'create-my-thing',
+  description: 'Create a new thing following project conventions',
+  type: 'create-my-thing',
+  supportedLanguages: ['typescript', 'javascript'],
+  template: `---
+name: create-my-thing
+description: Create a new thing following {{projectName}} conventions
+user-invocable: true
+allowed-tools: Read, Write, Glob, Grep
+argument-hint: "<Name>"
+---
+
+# Create: $ARGUMENTS
+
+{{#if (eq stack.language "typescript")}}
+Create a TypeScript file...
+{{/if}}
+`,
+};
+```
+
+2. Register in `packages/adapters/src/templates/index.ts`:
+   - Import the template
+   - Add it to the `builtInTemplates` array
+   - Add a shorthand alias in `TEMPLATE_ALIASES` if desired
+3. Add tests for the template rendering
+4. Verify: `npm test`
+
+Templates support three constructs:
+- `{{variable.path}}` — simple replacement with dot-notation
+- `{{#if variable}}...{{/if}}` — truthiness conditionals
+- `{{#if (eq variable "value")}}...{{/if}}` — equality conditionals
 
 ## Adding a Reference Skill
 

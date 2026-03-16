@@ -2,6 +2,8 @@
 
 ## What it does
 
+> **Tip:** For project-specific scaffold skills (like `/create-component` or `/create-test`), consider using `skillkit adapt` instead of writing from scratch. The adapt command scans your repo, detects your stack, and generates a skill tailored to your project's conventions automatically. See [GUIDE_ADAPT.md](GUIDE_ADAPT.md).
+
 The `skillkit init` command scaffolds a new Agent Skill. It creates a directory containing two files:
 
 1. **SKILL.md** -- the skill definition file, with YAML frontmatter and a markdown body that AI coding tools read as instructions.

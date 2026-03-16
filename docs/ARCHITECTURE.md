@@ -147,7 +147,7 @@ export const myRule: LintRule = {
 
 ## Test Infrastructure
 
-139+ unit tests using vitest, organized by package:
+175+ unit tests using vitest, organized by package:
 
 ```
 packages/core/src/__tests__/
@@ -183,7 +183,7 @@ CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `v
 | Version | Milestone | Key Deliverable | Status |
 |---------|-----------|-----------------|--------|
 | v0.1 | Foundation | Parser, linter (15 rules), CLI, init, CI | Shipped |
-| v0.2 | Testing | YAML test harness, mock mode, 8 assertion types, 139 tests | Shipped |
+| v0.2 | Testing | YAML test harness, mock mode, 8 assertion types | Shipped |
 | v0.3 | Quality | Benchmarking, scoring, regression tracking | Shipped |
 | v0.4 | Generation | Repo scanning, stack detection, adaptive skill generation | **Current** |
 | v1.0 | Ecosystem | Plugin API, CI/CD, cross-tool testing | Planned |

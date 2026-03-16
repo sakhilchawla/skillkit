@@ -176,15 +176,25 @@ scenarios:
 
 Note: In mock mode, assertions must match strings present in the SKILL.md body itself. See [GUIDE_TEST.md](GUIDE_TEST.md) for details on writing mock-compatible tests.
 
+### Step 6: Generate project-specific skills
+
+If you want scaffold skills (like `/create-component`) tailored to your project's conventions:
+
+```bash
+skillkit adapt component
+```
+
+This scans your repo, detects your stack (framework, styling, testing, etc.), and generates a SKILL.md customized for your project. See [GUIDE_ADAPT.md](GUIDE_ADAPT.md) for the full guide.
+
 ## Command reference
 
 | Command | Description | Status | Detailed guide |
 |---------|-------------|--------|----------------|
-| `skillkit lint [path]` | Validate SKILL.md files against 15 rules for spec compliance, security, best practices, and performance. Three presets: `strict`, `recommended`, `minimal`. | Available | [GUIDE_LINT.md](GUIDE_LINT.md) |
-| `skillkit init <name>` | Scaffold a new skill with a SKILL.md template and test file. | Available | [GUIDE_INIT.md](GUIDE_INIT.md) |
+| `skillkit lint [path]` | Validate SKILL.md files against 15 rules for spec compliance, security, best practices, and performance. Three presets: `strict`, `recommended`, `minimal`. | Working | [GUIDE_LINT.md](GUIDE_LINT.md) |
+| `skillkit init <name>` | Scaffold a new skill with a SKILL.md template and test file. | Working | [GUIDE_INIT.md](GUIDE_INIT.md) |
 | `skillkit test [path]` | Run declarative test scenarios defined in `.test.yaml` files. Mock mode evaluates assertions against the SKILL.md body. | Working (mock mode) | [GUIDE_TEST.md](GUIDE_TEST.md) |
-| `skillkit bench [path]` | Measure skill quality with precision, recall, and token efficiency scoring. Compare skills and detect regressions. | v0.3 | [GUIDE_BENCH.md](GUIDE_BENCH.md) |
-| `skillkit adapt <template> <repo>` | Scan a repository, detect its stack, and generate skills tailored to its conventions. | v0.4 | [GUIDE_ADAPT.md](GUIDE_ADAPT.md) |
+| `skillkit bench [path]` | Measure skill quality with precision, recall, and token efficiency scoring. Compare skills and detect regressions. | Working | [GUIDE_BENCH.md](GUIDE_BENCH.md) |
+| `skillkit adapt <template> [repo]` | Scan a repository, detect its stack, and generate skills tailored to its conventions. Templates: `component`, `module`, `test`. | Working | [GUIDE_ADAPT.md](GUIDE_ADAPT.md) |
 
 Run `skillkit --help` to see all commands and options. Run `skillkit --version` to check the installed version.
 
@@ -236,7 +246,7 @@ cd skillkit
 npm install
 
 npm run build          # TypeScript compilation
-npm test               # 139 unit tests (~200ms)
+npm test               # 175+ unit tests (~200ms)
 npm run lint:self      # Lint reference skills
 ```
 

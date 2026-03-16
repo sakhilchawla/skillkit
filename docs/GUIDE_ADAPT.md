@@ -1,6 +1,6 @@
 # `skillkit adapt` -- Project-Aware Skill Generation
 
-> Planned for v0.4. This guide documents the full design. See [Current Status](#current-status) at the bottom for what you can use today.
+> **Status: Available in v0.4.** This command is fully functional. Run `skillkit adapt component` to try it.
 
 ## What It Does
 
@@ -9,7 +9,7 @@
 One command:
 
 ```bash
-npx skillkit adapt create-component
+npx skillkit adapt component
 ```
 
 It reads your repo, figures out that you use Next.js + Tailwind + Vitest + Zustand, and produces a `/create-component` skill that generates components exactly the way your team already writes them -- correct imports, correct file naming, correct directory, correct test structure. No manual editing.
@@ -26,53 +26,71 @@ This means every team, for every project, writes these skills by hand. Or worse,
 
 `skillkit adapt` fixes this. You write the template once. It works everywhere.
 
+## Quick Start
+
+```bash
+# Generate a /create-component skill for your project
+skillkit adapt component
+
+# Generate a /create-module skill
+skillkit adapt module
+
+# Generate a /create-test skill
+skillkit adapt test
+
+# Scan a specific directory
+skillkit adapt component ./path/to/my-project
+```
+
 ## How It Works
 
 ### Step 1: Scan your repo
 
 ```
-Scanning...
-  Found package.json
-  Found tsconfig.json
-  Found tailwind.config.ts
-  Found apps/shell/ (Next.js app directory)
-  Found packages/ (6 internal packages)
-  Found vitest.config.ts (3 matches)
+Scanning /path/to/my-project
 ```
 
-skillkit reads the files that define your project: manifest files, config files, directory layout, existing source files. It does not execute your code or install anything.
+skillkit reads the files that define your project: package.json, tsconfig.json, config files, directory layout, existing source files. It does not execute your code or install anything.
 
 ### Step 2: Detect your stack
 
 ```
 Detected stack:
-  Language:    TypeScript (strict mode)
-  Framework:   Next.js 15 (App Router)
-  Styling:     Tailwind CSS
-  Testing:     Vitest
-  State:       Zustand
-  Monorepo:    npm workspaces + Turborepo
-  Components:  packages/shared-design-system/src/components/
-  Naming:      PascalCase files, named exports
+  Language:       typescript
+  Framework:      next (App Router)
+  Styling:        tailwind
+  Testing:        vitest
+  State:          zustand
+  Build tool:     turborepo
+  Monorepo:       yes
+  Package manager: npm
 ```
 
 skillkit maps what it found to a structured profile of your project. This profile drives every decision in the generated skill.
 
-### Step 3: Fill in the template
+### Step 3: Detect conventions
 
-The generic `create-component` template has placeholders like `{{styling_import}}`, `{{test_framework}}`, and `{{component_directory}}`. skillkit fills them in with your detected values. Conditional blocks (`{{#if uses_tailwind}}`) select the right patterns for your stack. Irrelevant sections are removed entirely.
+skillkit also scans your source files to detect:
+- **Naming conventions**: PascalCase, kebab-case, camelCase, snake_case
+- **Directory layout**: Where components, tests, modules, and styles live
+- **Export style**: Named exports vs default exports
+- **Barrel exports**: Whether you use index.ts re-exports
+- **Test patterns**: Co-located tests vs dedicated test directories, test file suffix
+- **Client components**: Whether `'use client'` directives are used (Next.js App Router)
 
-### Step 4: Save the generated skill
+### Step 4: Render the template
+
+The generic template has placeholders like `{{conventions.paths.components}}`, `{{stack.testing}}`, and `{{conventions.naming.files}}`. skillkit fills them in with your detected values. Conditional blocks (`{{#if (eq stack.styling "tailwind")}}`) select the right patterns for your stack. Irrelevant sections are removed entirely.
+
+### Step 5: Save the generated skill
 
 ```
-$ npx skillkit adapt create-component
-
-  Generated: .claude/skills/create-component/SKILL.md
-  Template:  create-component (built-in)
-  Stack:     Next.js 15 / Tailwind / Vitest / Zustand
+Generated: .claude/skills/create-component/SKILL.md
+  Template:  create-component
+  Stack:     typescript / next / tailwind / vitest
   Output:    .claude/skills/create-component/SKILL.md
 
-  Try it: /create-component UserProfile
+  Try it: /create-component MyItem
 ```
 
 The skill is saved to `.claude/skills/` (or `.agent/skills/` depending on your tooling). It is a plain SKILL.md file -- you can read it, edit it, commit it, and share it with your team.
@@ -83,199 +101,208 @@ The skill is saved to `.claude/skills/` (or `.agent/skills/` depending on your t
 
 | Signal | How it detects | Values |
 |--------|---------------|--------|
-| **Language** | `package.json` present | Node / TypeScript |
+| **Language** | `package.json` present | JavaScript / TypeScript |
 | | `pyproject.toml` or `setup.py` | Python |
 | | `Cargo.toml` | Rust |
 | | `go.mod` | Go |
 | | `build.gradle` or `pom.xml` | Java / Kotlin |
 | **Framework** | `next` in dependencies | Next.js (detects App Router vs Pages) |
 | | `react` without next | React (CRA / Vite) |
-| | `vue` in dependencies | Vue (detects 2 vs 3) |
+| | `vue` in dependencies | Vue |
 | | `svelte` or `@sveltejs/kit` | Svelte / SvelteKit |
 | | `django` in requirements | Django |
 | | `fastapi` in requirements | FastAPI |
-| | `actix-web` or `axum` in Cargo.toml | Rust web framework |
 | **Styling** | `tailwindcss` in devDependencies | Tailwind CSS |
 | | `styled-components` in dependencies | styled-components |
 | | `*.module.css` files present | CSS Modules |
 | | `sass` or `scss` in devDependencies | SCSS |
-| | None of the above | Plain CSS / unstyled |
 | **Testing** | `vitest` in devDependencies | Vitest |
 | | `jest` in devDependencies | Jest |
 | | `pytest` in dev requirements | pytest |
 | | `Cargo.toml` present | `cargo test` |
 | | `go.mod` present | `go test` |
-| | Co-located `*.test.*` files | Tests next to source |
-| | Separate `__tests__/` or `tests/` dir | Tests in dedicated directory |
 | **State** | `zustand` in dependencies | Zustand |
 | | `@reduxjs/toolkit` in dependencies | Redux Toolkit |
 | | `pinia` in dependencies | Pinia |
-| | `@tanstack/react-query` | TanStack Query (server state) |
-| | None of the above | Framework-native / none |
 | **Monorepo** | `workspaces` field in package.json | npm/yarn workspaces |
 | | `turbo.json` present | Turborepo |
 | | `nx.json` present | Nx |
 | | `lerna.json` present | Lerna |
-| **Naming** | Scan existing files | PascalCase, kebab-case, snake_case, camelCase |
-| **Exports** | Scan existing files | Default exports vs named exports |
-
----
-
-## Skill Template Format
-
-Templates use Handlebars-style syntax with three constructs: placeholders, conditionals, and loops.
-
-### Placeholders
-
-```
-{{variable_name}}
-```
-
-Replaced with the detected value. Examples:
-
-| Placeholder | Example value |
-|-------------|---------------|
-| `{{language}}` | `TypeScript` |
-| `{{framework}}` | `Next.js` |
-| `{{component_dir}}` | `packages/shared-design-system/src/components` |
-| `{{test_suffix}}` | `.test.tsx` |
-| `{{style_extension}}` | `.module.css` |
-| `{{package_scope}}` | `@goodads-ai` |
-
-### Conditionals
-
-```handlebars
-{{#if uses_tailwind}}
-- Style with Tailwind utility classes. Do not create separate CSS files.
-{{/if}}
-
-{{#if uses_css_modules}}
-- Create a `{{name}}.module.css` file alongside the component.
-{{/if}}
-```
-
-Include or exclude entire blocks based on detected stack.
-
-### Loops
-
-```handlebars
-{{#each import_patterns}}
-- `{{{this}}}`
-{{/each}}
-```
-
-Iterate over detected patterns (import conventions, file patterns, etc).
-
-### Full template example
-
-Here is a simplified version of the built-in `create-component` template:
-
-```markdown
----
-name: create-{{scaffold_type}}
-description: Create a new {{framework}} {{scaffold_type}} following project conventions
-user-invocable: true
-allowed-tools: Read, Write, Glob, Grep
-argument-hint: "<ComponentName>"
----
-
-# Create {{framework}} Component
-
-Create a new component at `{{component_dir}}/` following this project's conventions.
-
-## File Structure
-
-Create these files for the component `$ARGUMENTS`:
-
-{{#if uses_typescript}}
-- `{{component_dir}}/$ARGUMENTS/$ARGUMENTS.tsx` -- component implementation
-- `{{component_dir}}/$ARGUMENTS/index.ts` -- re-export
-{{else}}
-- `{{component_dir}}/$ARGUMENTS/$ARGUMENTS.jsx` -- component implementation
-- `{{component_dir}}/$ARGUMENTS/index.js` -- re-export
-{{/if}}
-{{#if uses_css_modules}}
-- `{{component_dir}}/$ARGUMENTS/$ARGUMENTS.module.css` -- styles
-{{/if}}
-{{#if has_tests}}
-- `{{test_dir}}/$ARGUMENTS{{test_suffix}}` -- tests
-{{/if}}
-
-## Component Pattern
-
-{{#if uses_typescript}}
-```tsx
-{{#if uses_client_components}}
-'use client';
-
-{{/if}}
-{{#each import_patterns}}
-{{{this}}}
-{{/each}}
-
-interface $ARGUMENTSProps {
-  // Define props here
-}
-
-export function $ARGUMENTS({ }: $ARGUMENTSProps) {
-{{#if uses_tailwind}}
-  return <div className=""></div>;
-{{else if uses_css_modules}}
-  return <div className={styles.root}></div>;
-{{else}}
-  return <div></div>;
-{{/if}}
-}
-```
-{{/if}}
-
-## Checklist
-
-- [ ] Component created with correct naming ({{naming_convention}})
-- [ ] Exports match project pattern ({{export_style}})
-{{#if has_tests}}
-- [ ] Test file created using {{test_framework}}
-{{/if}}
-{{#if has_barrel_exports}}
-- [ ] Barrel export updated in `{{component_dir}}/index.ts`
-{{/if}}
-```
+| **Naming** | Scan existing component files | PascalCase, kebab-case, snake_case, camelCase |
+| **Exports** | Scan existing files | Named exports vs default exports |
 
 ---
 
 ## Built-in Templates
 
-skillkit ships with three templates that cover the most common scaffold needs.
+skillkit ships with three templates that cover the most common scaffold needs. You can use either the shorthand or full name.
 
-### `create-component`
+| Shorthand | Full name | What it generates |
+|-----------|-----------|-------------------|
+| `component` | `create-component` | `/create-component` skill for UI components |
+| `module` | `create-module` | `/create-module` skill for API modules/services |
+| `test` | `create-test` | `/create-test` skill for test files |
+
+### `component` (create-component)
 
 Generates a skill for creating UI components.
 
 - **React-aware**: functional components, hooks, `'use client'` directive (Next.js App Router)
-- **Vue-aware**: `<script setup>`, Composition API, SFC structure
+- **Vue-aware**: SFC structure with `<script setup>`
 - **Svelte-aware**: `.svelte` files, reactive declarations
 - Handles styling (Tailwind, CSS Modules, styled-components, SCSS)
 - Generates co-located or separate test files based on project convention
 - Updates barrel exports if the project uses them
 
-### `create-module`
+### `module` (create-module)
 
 Generates a skill for creating API modules, services, or utility libraries.
 
-- Detects API patterns (fetch wrappers, axios instances, tRPC routers)
-- Matches validation approach (Zod schemas, io-ts, class-validator)
+- Detects API patterns (fetch wrappers, axios instances)
+- Matches validation approach (Zod schemas, Pydantic models)
 - Follows the project's module structure (flat files vs directory-per-module)
 - Includes error handling patterns from existing modules
 
-### `create-test`
+### `test` (create-test)
 
 Generates a skill for creating test files that match your project's test conventions.
 
 - Detects test framework (Vitest, Jest, pytest, cargo test, go test)
 - Matches naming patterns (`*.test.ts`, `*.spec.ts`, `test_*.py`)
-- Includes correct setup/teardown patterns from existing tests
+- Includes correct setup/teardown patterns
 - Handles mocking approach (vi.mock, jest.mock, unittest.mock, etc.)
 - Respects co-located vs dedicated test directory convention
+
+---
+
+## Skill Template Format
+
+Templates use Handlebars-style syntax with three constructs: placeholders, conditionals, and equality checks.
+
+### Placeholders
+
+```
+{{variable.path}}
+```
+
+Replaced with the detected value using dot-notation. Examples:
+
+| Placeholder | Example value |
+|-------------|---------------|
+| `{{stack.language}}` | `typescript` |
+| `{{stack.framework}}` | `next` |
+| `{{conventions.paths.components}}` | `src/components` |
+| `{{conventions.testSuffix}}` | `.test.tsx` |
+| `{{conventions.naming.files}}` | `PascalCase` |
+| `{{projectName}}` | `my-app` |
+
+### Truthiness conditionals
+
+```handlebars
+{{#if conventions.usesTailwind}}
+- Style with Tailwind utility classes. Do not create separate CSS files.
+{{/if}}
+```
+
+Include or exclude entire blocks based on truthy/falsy values.
+
+### Equality conditionals
+
+```handlebars
+{{#if (eq stack.testing "vitest")}}
+Use vitest for testing. Import from `vitest`: describe, it, expect, vi.
+{{/if}}
+
+{{#if (eq stack.testing "jest")}}
+Use jest for testing.
+{{/if}}
+```
+
+Check a value against a specific string.
+
+---
+
+## Complete Example
+
+Let's walk through adapting `component` for a real project: a Next.js 15 monorepo with Tailwind CSS, Vitest, and Zustand.
+
+### Before: The generic template
+
+The built-in `create-component` template has conditional blocks for every supported stack. It references `{{conventions.paths.components}}`, `{{stack.styling}}`, `{{stack.testing}}`, and other detected values.
+
+### What skillkit detects
+
+```
+Detected stack:
+  Language:       typescript
+  Framework:      next
+  Styling:        tailwind
+  Testing:        vitest
+  State:          zustand
+  Build tool:     turborepo
+  Monorepo:       yes
+  Package manager: npm
+
+Conventions:
+  Component dir:  src/components
+  Test location:  co-located (__tests__)
+  Test suffix:    .test.tsx
+  Naming:         PascalCase
+  Export style:   named
+  Barrel exports: yes
+```
+
+### After: The generated skill
+
+This is what gets saved to `.claude/skills/create-component/SKILL.md`:
+
+```markdown
+---
+name: create-component
+description: Create a new UI component following my-app conventions
+user-invocable: true
+allowed-tools: Read, Write, Glob, Grep
+argument-hint: "<ComponentName>"
+---
+
+# Create Component: $ARGUMENTS
+
+Create a new component in `src/components/`.
+
+## File naming
+Use PascalCase for file names.
+Component name: Use PascalCase (e.g., MyComponent).
+
+## Files to create
+
+### Component file
+Create `src/components/$ARGUMENTS.tsx`
+
+Use Tailwind CSS classes for styling. Do not create a separate CSS file.
+
+### Test file
+Create test at `src/__tests__/$ARGUMENTS.test.tsx`
+Use vitest for testing.
+
+## Conventions
+- Export the component as a named export
+- Props interface named `$ARGUMENTS` + `Props`
+- Follow patterns from existing components in `src/components/`
+```
+
+Notice what happened:
+
+- `{{conventions.paths.components}}` became `src/components`
+- The CSS Modules and styled-components sections were removed entirely (Tailwind detected)
+- `{{stack.testing}}` drove the test file instructions to use Vitest
+- `{{conventions.naming.files}}` became `PascalCase`
+- Everything references real paths and real conventions. No placeholders remain.
+
+The generated skill is ready to use immediately:
+
+```
+/create-component UserAvatar
+```
 
 ---
 
@@ -297,7 +324,7 @@ templates/
 ```markdown
 ---
 name: create-hook
-description: Create a new custom {{framework}} hook following project conventions
+description: Create a new custom {{stack.framework}} hook following project conventions
 user-invocable: true
 allowed-tools: Read, Write, Glob, Grep
 argument-hint: "<hookName>"
@@ -305,7 +332,7 @@ argument-hint: "<hookName>"
 
 # Create Custom Hook
 
-Create a new hook at `{{hooks_dir}}/` following project conventions.
+Create a new hook at `{{conventions.paths.components}}/hooks/` following project conventions.
 
 ## Naming
 
@@ -313,234 +340,32 @@ Hook must start with `use` prefix: `use$ARGUMENTS`
 
 ## File
 
-Create `{{hooks_dir}}/use$ARGUMENTS.ts` with this structure:
+Create `{{conventions.paths.components}}/hooks/use$ARGUMENTS.ts`
 
-```ts
-{{#each import_patterns}}
-{{{this}}}
-{{/each}}
-
-export function use$ARGUMENTS() {
-  // Implementation
-}
-```
-
-{{#if has_tests}}
+{{#if (eq stack.testing "vitest")}}
 ## Test
 
-Create `{{test_dir}}/use$ARGUMENTS{{test_suffix}}` using {{test_framework}}.
+Create test at `{{conventions.paths.tests}}/use$ARGUMENTS.test.ts` using vitest.
 {{/if}}
 ```
 
-### Step 3: Define custom detection (optional)
-
-If your template needs values beyond the defaults, add a `detect` block at the top of the template:
-
-```yaml
-# In skillkit.config.yaml
-adapt:
-  templates:
-    - path: templates/create-hook.skill.md
-      detect:
-        hooks_dir:
-          glob: "**/hooks/"
-          pick: "most-files"   # Use the hooks dir with the most files
-```
-
-### Step 4: Run adapt
+### Step 3: Run adapt
 
 ```bash
 npx skillkit adapt create-hook
 ```
 
-skillkit merges the built-in detection (language, framework, testing, etc.) with your custom detection rules, fills in the template, and saves the result.
-
-### Step 5: Commit and share
+### Step 4: Commit and share
 
 The generated skill is a plain SKILL.md. Commit it to your repo so the whole team gets it.
 
 ---
 
-## Complete Example
+## Comparison: `/scaffold` skill vs `skillkit adapt`
 
-Let's walk through adapting `create-component` for a real project: a Next.js 15 monorepo with Tailwind CSS, Vitest, and Zustand.
+The [/scaffold](../examples/scaffold/) reference skill does a similar job at runtime. Here is how they compare:
 
-### The Generic Template (input)
-
-This is what the built-in `create-component` template looks like before adaptation:
-
-```markdown
----
-name: create-component
-description: Create a new {{framework}} component following project conventions
-user-invocable: true
-allowed-tools: Read, Write, Glob, Grep
-argument-hint: "<ComponentName>"
----
-
-# Create {{framework}} Component
-
-## Files to create
-
-{{#if uses_typescript}}
-1. `{{component_dir}}/$ARGUMENTS.tsx`
-{{else}}
-1. `{{component_dir}}/$ARGUMENTS.jsx`
-{{/if}}
-{{#if uses_css_modules}}
-2. `{{component_dir}}/$ARGUMENTS.module.css`
-{{/if}}
-{{#if has_tests}}
-{{#if uses_typescript}}
-3. `{{test_dir}}/$ARGUMENTS{{test_suffix}}`
-{{else}}
-3. `{{test_dir}}/$ARGUMENTS{{test_suffix}}`
-{{/if}}
-{{/if}}
-
-## Component structure
-
-{{#if uses_client_components}}
-Add `'use client'` directive only if the component needs interactivity.
-{{/if}}
-
-{{#if uses_tailwind}}
-Style with Tailwind utility classes. Do not create separate style files.
-{{/if}}
-{{#if uses_css_modules}}
-Create a co-located `.module.css` file for styles.
-{{/if}}
-{{#if uses_styled_components}}
-Define styled components in the same file or a `$ARGUMENTS.styles.ts` file.
-{{/if}}
-
-{{#if uses_typescript}}
-Define a `$ARGUMENTSProps` interface for the component's props.
-{{/if}}
-
-Use {{export_style}} exports.
-
-{{#if has_tests}}
-## Test
-
-Write tests using {{test_framework}}.
-- Test file: `{{test_dir}}/$ARGUMENTS{{test_suffix}}`
-- Import the component and test its rendering and behavior.
-{{/if}}
-
-{{#if has_barrel_exports}}
-## Registration
-
-Add the component to the barrel export at `{{component_dir}}/index.ts`.
-{{/if}}
-```
-
-### Detected Values (what skillkit finds)
-
-```yaml
-language:              TypeScript
-uses_typescript:       true
-framework:             Next.js
-component_dir:         packages/shared-design-system/src/components
-test_dir:              packages/shared-design-system/src/components  # co-located
-test_suffix:           .test.tsx
-test_framework:        Vitest
-uses_tailwind:         true
-uses_css_modules:      false
-uses_styled_components: false
-uses_client_components: true
-has_tests:             true
-has_barrel_exports:    true
-export_style:          named
-naming_convention:     PascalCase
-package_scope:         "@goodads-ai"
-import_patterns:
-  - "import { cn } from '@goodads-ai/shared-design-system';"
-```
-
-### Generated Skill (output)
-
-This is what gets saved to `.claude/skills/create-component/SKILL.md`:
-
-```markdown
----
-name: create-component
-description: Create a new Next.js component following project conventions
-user-invocable: true
-allowed-tools: Read, Write, Glob, Grep
-argument-hint: "<ComponentName>"
----
-
-# Create Next.js Component
-
-## Files to create
-
-1. `packages/shared-design-system/src/components/$ARGUMENTS.tsx`
-3. `packages/shared-design-system/src/components/$ARGUMENTS.test.tsx`
-
-## Component structure
-
-Add `'use client'` directive only if the component needs interactivity.
-
-Style with Tailwind utility classes. Do not create separate style files.
-
-Define a `$ARGUMENTSProps` interface for the component's props.
-
-Use named exports.
-
-## Test
-
-Write tests using Vitest.
-- Test file: `packages/shared-design-system/src/components/$ARGUMENTS.test.tsx`
-- Import the component and test its rendering and behavior.
-
-## Registration
-
-Add the component to the barrel export at `packages/shared-design-system/src/components/index.ts`.
-```
-
-Notice what happened:
-
-- `{{framework}}` became `Next.js`
-- `{{component_dir}}` became the real path from the project
-- The CSS Modules and styled-components sections were removed entirely (the project uses Tailwind)
-- `{{test_framework}}` became `Vitest`
-- `{{export_style}}` became `named`
-- The `'use client'` instruction was included (Next.js App Router detected)
-- Everything references real paths and real conventions. No placeholders remain.
-
-The generated skill is ready to use immediately:
-
-```
-/create-component UserAvatar
-```
-
-And the agent will create `UserAvatar.tsx`, `UserAvatar.test.tsx`, and update the barrel export -- all matching the patterns your team already uses.
-
----
-
-## Current Status
-
-`skillkit adapt` is planned for **v0.4**. It is not yet available as a CLI command.
-
-**What you can use today:**
-
-The [/scaffold](../examples/scaffold/) reference skill does the same job at runtime. Instead of pre-generating a skill from a template, it reads your repo on every invocation and generates a scaffold skill on the fly.
-
-```bash
-# Copy the scaffold skill to your project
-cp -r examples/scaffold/ .claude/skills/scaffold/
-
-# Use it to generate project-specific scaffold skills
-# (invoke from your AI coding tool)
-/scaffold component
-/scaffold module
-/scaffold endpoint
-```
-
-The difference between `/scaffold` and `skillkit adapt`:
-
-| | `/scaffold` (available now) | `skillkit adapt` (v0.4) |
+| | `/scaffold` (reference skill) | `skillkit adapt` (CLI command) |
 |---|---|---|
 | When it runs | Every time you invoke it | Once, then you use the generated skill |
 | Speed | Slower (scans repo each time) | Instant (pre-generated) |
@@ -548,4 +373,4 @@ The difference between `/scaffold` and `skillkit adapt`:
 | Customization | Edit the scaffold skill | Edit the template or the output |
 | Requires AI tool | Yes | No (CLI command) |
 
-Both produce the same end result: a skill tailored to your project. `skillkit adapt` just does the detection step ahead of time so the generated skill is faster and more consistent.
+Both produce the same end result: a skill tailored to your project. `skillkit adapt` does the detection step ahead of time so the generated skill is faster and more consistent.

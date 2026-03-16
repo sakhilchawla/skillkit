@@ -1,6 +1,6 @@
 # Benchmarking Skills with `skillkit bench`
 
-> **Status:** Planned for v0.3. This guide documents the full design so you can start preparing test corpora now. See [Current Status](#current-status) at the bottom for what is available today.
+> **Status: Shipped in v0.3.** The benchmarking package is available. See [Current Status](#current-status) at the bottom for details.
 
 ## What It Does
 
@@ -721,26 +721,26 @@ $ skillkit bench review.bench.yaml
 
 ## Current Status
 
-`skillkit bench` is **planned for v0.3** and is currently in development in the `@skillkit/benchmarks` package. Here is what is available now and what is coming:
+`skillkit bench` **shipped in v0.3.** The `@skillkit/benchmarks` package provides scoring, comparison, and regression tracking APIs.
 
 | Capability | Status | Available In |
 |------------|--------|--------------|
-| Lint skills for quality | Available | v0.1 (`skillkit lint`) |
-| Declarative test scenarios (mock mode) | Available | v0.2 (`skillkit test`) |
-| Precision/recall scoring | In development | v0.3 (`skillkit bench`) |
-| A/B comparison | In development | v0.3 (`skillkit bench --compare`) |
-| Regression detection | In development | v0.3 (`skillkit bench` + baselines) |
-| HTML dashboard | Planned | v0.3 (`--format html`) |
-| CI integration helpers | Planned | v0.3 / v1.0 |
+| Lint skills for quality | Shipped | v0.1 (`skillkit lint`) |
+| Declarative test scenarios (mock mode) | Shipped | v0.2 (`skillkit test`) |
+| Precision/recall scoring | Shipped | v0.3 (`skillkit bench`) |
+| A/B comparison | Shipped | v0.3 (`skillkit bench --compare`) |
+| Regression detection | Shipped | v0.3 (`skillkit bench` + baselines) |
+| HTML dashboard | Planned | v1.0 (`--format html`) |
+| CI integration helpers | Planned | v1.0 |
 
-> **Note:** The benchmarks package scaffold is at `packages/benchmarks/` in the repository. Track development progress there.
+The benchmarks package is at `packages/benchmarks/` in the repository.
 
-**What you can do today:**
+**Getting started:**
 
-1. **Start building your test corpus now.** Create fixture directories with known bugs and clean code. Define ground truth YAML files. This is the hard part and it is not tool-dependent.
+1. **Build your test corpus.** Create fixture directories with known bugs and clean code. Define ground truth YAML files. This is the hard part and it is not tool-dependent.
 
 2. **Use `skillkit lint`** to validate your skills against the 15 built-in rules. Linting catches structural problems (missing descriptions, unrestricted Bash, hardcoded paths) that benchmarking would also penalize.
 
-3. **Use `skillkit test` (v0.2)** to write declarative scenario tests. Test scenarios are a subset of benchmark scenarios -- when bench ships, you can promote your test scenarios to benchmarks by adding ground truth files.
+3. **Use `skillkit test`** to write declarative scenario tests. Test scenarios are a subset of benchmark scenarios -- you can promote your test scenarios to benchmarks by adding ground truth files.
 
 4. **Design your ground truth carefully.** The quality of a benchmark is only as good as the answer key. Invest time in curating realistic scenarios with well-defined expected findings. A benchmark with sloppy ground truth will give you misleading scores.
