@@ -1,0 +1,14 @@
+name: investigate skill tests
+skill: ./SKILL.md
+
+scenarios:
+  - name: follows phased approach
+    invoke: "/investigate TypeError: Cannot read property of undefined"
+    assertions:
+      - contains: "Reproduce"
+      - contains: "Hypothesis"
+
+  - name: does not skip to fix
+    invoke: "/investigate test failure in auth module"
+    assertions:
+      - completes: true

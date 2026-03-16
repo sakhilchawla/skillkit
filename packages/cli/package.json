@@ -1,0 +1,22 @@
+{
+  "name": "@skillkit/cli",
+  "version": "0.1.0",
+  "description": "CLI for building, testing, and linting Agent Skills",
+  "main": "./src/index.ts",
+  "bin": {
+    "skillkit": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@skillkit/core": "*",
+    "@skillkit/linter": "*",
+    "yaml": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,15 @@
+name: tdd skill tests
+skill: ./SKILL.md
+
+scenarios:
+  - name: writes test before implementation
+    invoke: "/tdd add a sum function"
+    assertions:
+      - contains: "test"
+      - contains: "fail"
+
+  - name: minimal implementation
+    invoke: "/tdd add a sum function"
+    assertions:
+      - completes: true
+      - noErrors: true

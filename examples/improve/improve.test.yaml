@@ -1,0 +1,15 @@
+name: improve skill tests
+skill: ./SKILL.md
+
+scenarios:
+  - name: produces structured audit report
+    invoke: "/improve all"
+    assertions:
+      - contains: "Skill Audit"
+      - contains: "Recommendations"
+      - completes: true
+
+  - name: detects stale skills
+    invoke: "/improve skills"
+    assertions:
+      - completes: true

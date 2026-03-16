@@ -1,0 +1,41 @@
+# skillkit configuration
+# https://github.com/skillkit/skillkit
+version: 1
+
+# Where to find skills
+skills:
+  paths:
+    - .claude/skills
+    - .agent/skills
+    - ~/.claude/skills
+
+# Linter configuration
+lint:
+  # Presets: strict | recommended | minimal
+  preset: recommended
+  rules:
+    # Override individual rule severities
+    # require-description: error
+    # no-unrestricted-bash: warn
+    # has-argument-hint: off
+
+# Test configuration
+test:
+  # Model for integration tests (requires API key)
+  # model: claude-sonnet-4-6
+  timeout: 60000          # Per-scenario timeout (ms)
+  mock: true              # Use mock mode (no API calls) by default
+  fixtures:
+    - ./test-fixtures     # Custom fixture repos
+
+# Benchmark configuration
+bench:
+  runs: 3                 # Runs per scenario for averaging
+  output: ./benchmark-results
+  format: json            # json | html | markdown
+
+# Adapter configuration
+adapt:
+  templates:
+    - ./skill-templates   # Custom template directory
+  auto-detect: true       # Auto-detect stack from repo

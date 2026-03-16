@@ -1,0 +1,15 @@
+name: scaffold skill tests
+skill: ./SKILL.md
+
+scenarios:
+  - name: detects project conventions
+    invoke: "/scaffold component"
+    assertions:
+      - contains: "Conventions detected"
+      - completes: true
+
+  - name: generates a valid skill file
+    invoke: "/scaffold component"
+    assertions:
+      - contains: "Generated"
+      - contains: "SKILL.md"

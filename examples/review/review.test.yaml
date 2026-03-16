@@ -1,0 +1,22 @@
+name: review skill tests
+skill: ./SKILL.md
+
+scenarios:
+  - name: catches security vulnerability
+    description: Detects XSS or injection patterns in code changes
+    invoke: "/review main"
+    assertions:
+      - contains: "CRITICAL"
+      - contains: "security"
+
+  - name: no false positives on clean diff
+    description: Does not report critical issues when diff is clean
+    invoke: "/review main"
+    assertions:
+      - noCriticalIssues: true
+
+  - name: provides actionable output
+    description: Each finding includes file, line, and description
+    invoke: "/review main"
+    assertions:
+      - matchesPattern: "\\[CRITICAL|WARNING|SUGGESTION\\]"
