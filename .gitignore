@@ -16,3 +16,4 @@ coverage/
 .env.*
 benchmark-results/
 tmp/
+social/
