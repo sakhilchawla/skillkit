@@ -149,11 +149,42 @@ export async function detectStack(repoPath: string): Promise<DetectedStack> {
       signals.push({ category: 'monorepo', value: 'true', source: 'lerna.json', confidence: 0.9 });
     }
 
-    // Collect all dependencies
+    // Collect all dependencies — root + child packages in monorepos
     const deps: Record<string, string> = {
       ...(packageJson.dependencies as Record<string, string> | undefined),
       ...(packageJson.devDependencies as Record<string, string> | undefined),
     };
+
+    // In monorepos, scan child package.json files for the real dependencies
+    if (stack.monorepo && packageJson.workspaces) {
+      const workspacePatterns = Array.isArray(packageJson.workspaces)
+        ? packageJson.workspaces as string[]
+        : (packageJson.workspaces as { packages?: string[] })?.packages ?? [];
+
+      for (const pattern of workspacePatterns) {
+        // Resolve glob patterns like "apps/*" and "packages/*"
+        const baseDir = pattern.replace(/\/?\*$/, '');
+        const fullBase = join(repoPath, baseDir);
+        try {
+          const { readdir } = await import('node:fs/promises');
+          const entries = await readdir(fullBase, { withFileTypes: true });
+          for (const entry of entries) {
+            if (entry.isDirectory()) {
+              const childPkg = await readJson(join(fullBase, entry.name, 'package.json'));
+              if (childPkg) {
+                const childDeps = {
+                  ...(childPkg.dependencies as Record<string, string> | undefined),
+                  ...(childPkg.devDependencies as Record<string, string> | undefined),
+                };
+                Object.assign(deps, childDeps);
+              }
+            }
+          }
+        } catch {
+          // Directory doesn't exist or can't be read — skip
+        }
+      }
+    }
 
     // Track highest confidence per field for conflict resolution
     const fieldConfidence: Partial<Record<string, number>> = {};

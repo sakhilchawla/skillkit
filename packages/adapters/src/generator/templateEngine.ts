@@ -43,7 +43,11 @@ function processEqConditionals(
 
     const [fullMatch, varPath, expectedValue, body] = match;
     const actualValue = resolvePath(context, varPath!);
-    const replacement = String(actualValue) === expectedValue ? body! : '';
+    // Support {{else}} inside the block
+    const parts = body!.split('{{else}}');
+    const trueBranch = parts[0]!;
+    const falseBranch = parts[1] ?? '';
+    const replacement = String(actualValue) === expectedValue ? trueBranch : falseBranch;
     result = result.replace(fullMatch!, replacement);
   }
 
@@ -72,7 +76,11 @@ function processTruthyConditionals(
     const [fullMatch, varPath, body] = match;
     const value = resolvePath(context, varPath!);
     const isTruthy = value !== null && value !== undefined && value !== false && value !== '' && value !== 0;
-    const replacement = isTruthy ? body! : '';
+    // Support {{else}} inside the block
+    const parts = body!.split('{{else}}');
+    const trueBranch = parts[0]!;
+    const falseBranch = parts[1] ?? '';
+    const replacement = isTruthy ? trueBranch : falseBranch;
     result = result.replace(fullMatch!, replacement);
   }
 

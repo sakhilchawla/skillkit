@@ -32,7 +32,12 @@ Component name: Use PascalCase (e.g., MyComponent).
 ## Files to create
 
 ### Component file
-Create \`{{conventions.paths.components}}/$ARGUMENTS{{#if (eq stack.language "typescript")}}.tsx{{else}}.jsx{{/if}}\`
+{{#if (eq stack.language "typescript")}}
+Create \`{{conventions.paths.components}}/$ARGUMENTS.tsx\`
+{{/if}}
+{{#if (eq stack.language "javascript")}}
+Create \`{{conventions.paths.components}}/$ARGUMENTS.jsx\`
+{{/if}}
 
 {{#if (eq stack.styling "tailwind")}}
 Use Tailwind CSS classes for styling. Do not create a separate CSS file.
@@ -45,10 +50,11 @@ Use styled-components. Define styled elements at the top of the file.
 {{/if}}
 
 ### Test file
-{{#if (eq conventions.naming.tests "__tests__")}}
-Create test at \`{{conventions.paths.tests}}/$ARGUMENTS.test{{#if (eq stack.language "typescript")}}.tsx{{else}}.jsx{{/if}}\`
-{{else}}
-Create test at \`{{conventions.paths.components}}/$ARGUMENTS.test{{#if (eq stack.language "typescript")}}.tsx{{else}}.jsx{{/if}}\`
+{{#if (eq stack.language "typescript")}}
+Create test at \`{{conventions.paths.tests}}/$ARGUMENTS.test.tsx\`
+{{/if}}
+{{#if (eq stack.language "javascript")}}
+Create test at \`{{conventions.paths.tests}}/$ARGUMENTS.test.jsx\`
 {{/if}}
 {{#if (eq stack.testing "vitest")}}
 Use vitest for testing.

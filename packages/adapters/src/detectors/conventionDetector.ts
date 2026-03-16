@@ -65,11 +65,45 @@ async function findFirstDir(
   repoPath: string,
   candidates: string[],
 ): Promise<string | null> {
+  // Check root-level candidates first
   for (const candidate of candidates) {
     if (await dirExists(join(repoPath, candidate))) {
       return candidate;
     }
   }
+
+  // In monorepos, scan child packages for candidates
+  try {
+    const pkgJson = JSON.parse(
+      await readFile(join(repoPath, 'package.json'), 'utf-8'),
+    ) as { workspaces?: string[] | { packages?: string[] } };
+    const workspaces = Array.isArray(pkgJson.workspaces)
+      ? pkgJson.workspaces
+      : pkgJson.workspaces?.packages ?? [];
+
+    for (const pattern of workspaces) {
+      const baseDir = pattern.replace(/\/?\*$/, '');
+      const fullBase = join(repoPath, baseDir);
+      try {
+        const entries = await readdir(fullBase, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.isDirectory()) {
+            for (const candidate of candidates) {
+              const childPath = join(baseDir, entry.name, candidate);
+              if (await dirExists(join(repoPath, childPath))) {
+                return childPath;
+              }
+            }
+          }
+        }
+      } catch {
+        // Skip unreadable workspace dirs
+      }
+    }
+  } catch {
+    // No package.json or not a monorepo — that's fine
+  }
+
   return null;
 }
 
