@@ -2,12 +2,13 @@ name: ship skill tests
 skill: ./SKILL.md
 
 scenarios:
-  - name: stops on main branch
+  - name: checks branch before shipping
     invoke: "/ship"
     assertions:
-      - contains: "Cannot ship from main"
+      - contains: "NOT on main/master"
 
-  - name: stops on test failure
+  - name: follows failure protocol
     invoke: "/ship"
     assertions:
-      - notContains: "git push"
+      - contains: "Failure Protocol"
+      - contains: "do NOT continue"

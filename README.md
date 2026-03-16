@@ -24,7 +24,7 @@ npx skillkit lint .claude/skills/
 # Scaffold a new skill
 npx skillkit init review
 
-# Run skill tests (v0.2)
+# Run skill tests (mock mode)
 npx skillkit test examples/
 ```
 
@@ -68,7 +68,7 @@ $ skillkit init review
 Next: edit SKILL.md, then run skillkit lint review/
 ```
 
-### `skillkit test` — Test skills with declarative scenarios (v0.2)
+### `skillkit test` — Test skills with declarative scenarios
 
 ```yaml
 # review.test.yaml
@@ -76,17 +76,21 @@ name: review skill tests
 skill: ./SKILL.md
 
 scenarios:
-  - name: catches XSS vulnerability
+  - name: catches security vulnerability
     invoke: "/review main"
     assertions:
       - contains: "CRITICAL"
-      - contains: "security"
+      - contains: "Security"
 
-  - name: no false positives on clean code
+  - name: includes severity categories
     invoke: "/review main"
     assertions:
-      - noCriticalIssues: true
+      - contains: "[CRITICAL]"
+      - contains: "[WARNING]"
+      - contains: "[SUGGESTION]"
 ```
+
+Mock mode (default) evaluates assertions against the SKILL.md body. 8 assertion types: `contains`, `notContains`, `matchesPattern`, `severity`, `completes`, `noErrors`, `noCriticalIssues`, `maxTokens`.
 
 ### `skillkit adapt` — Generate project-specific skills (v0.4)
 
@@ -129,9 +133,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 | Version | Features | Status |
 |---------|----------|--------|
-| v0.1 | `lint` (15 rules), `init`, core parser, 80 tests, CI | **Current** |
-| v0.2 | `test` with YAML scenarios, mock mode, fixtures | Planned |
-| v0.3 | `bench` with quality scoring and regression tracking | Planned |
+| v0.1 | `lint` (15 rules), `init`, core parser, CI | Shipped |
+| v0.2 | `test` with YAML scenarios, mock mode, 8 assertion types, 139 tests | **Current** |
+| v0.3 | `bench` with quality scoring and regression tracking | In development |
 | v0.4 | `adapt` with repo scanning and skill generation | Planned |
 | v1.0 | Plugin API, CI/CD integration, cross-tool testing | Planned |
 
@@ -163,7 +167,7 @@ cd skillkit
 npm install
 
 npm run build          # TypeScript build (tsc --build)
-npm test               # Run 80 unit tests (vitest)
+npm test               # Run 139 unit tests (vitest)
 npm run test:watch     # Watch mode
 npm run test:coverage  # Coverage report
 npm run lint:self      # Lint the reference skills

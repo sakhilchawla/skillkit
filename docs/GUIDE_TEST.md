@@ -435,13 +435,14 @@ skillkit test supports two execution modes.
 npx skillkit test examples/       # Uses mock mode by default
 ```
 
-In mock mode, skillkit does not call an AI model. Instead, it:
+In mock mode, skillkit does not call an AI model. Instead, it reads the SKILL.md body (everything after the YAML frontmatter) and uses it as the simulated output. All assertions are then evaluated against this text.
 
-1. Parses the test file and validates its structure
-2. Parses the referenced SKILL.md
-3. Checks that the skill file exists and is well-formed
-4. Validates that assertions use recognized types
-5. Reports structural issues (missing fields, invalid YAML, broken references)
+This means mock mode validates:
+
+1. That the test file parses correctly (valid YAML, required fields)
+2. That the SKILL.md file exists and is well-formed
+3. That assertions use recognized types with valid parameters
+4. That assertions actually match content in the skill's own instruction text
 
 Mock mode is fast (milliseconds), free (no API calls), and runs anywhere (no API key needed). Use it in CI/CD pipelines to catch structural problems early.
 
@@ -451,9 +452,10 @@ Mock mode is fast (milliseconds), free (no API calls), and runs anywhere (no API
 - Invalid YAML syntax
 - Broken skill file references (`skill: ./MISSING.md`)
 - Invalid regex patterns in `matchesPattern`
+- Assertions that reference strings not present in the skill definition
 
 **What mock mode cannot catch:**
-- Whether the skill actually produces the expected output
+- Whether the skill produces the expected output when run against real code
 - Whether assertions pass against real AI output
 - Prompt regressions (the skill generates different output after a change)
 
@@ -651,26 +653,82 @@ Each failure shows:
    npx skillkit test .claude/skills/review/ --real
    ```
 
-## Current Status
+## Writing Tests for Mock Mode
 
-**v0.1 (current):** The `skillkit test` command finds `*.test.yaml` files and validates that they exist. It does not yet parse the YAML or execute scenarios. This is useful for verifying your test files are in the right place with the right naming convention.
+In mock mode, the SKILL.md body IS the output. This means your assertions must match strings that actually appear in the skill's own instruction text.
+
+For example, if your SKILL.md body contains:
+
+```markdown
+## Output Format
+- [CRITICAL] <file>:<line> -- <description>
+- [WARNING] <file>:<line> -- <description>
+```
+
+Then these assertions will pass in mock mode:
+
+```yaml
+assertions:
+  - contains: "[CRITICAL]"        # This string is in the SKILL.md body
+  - contains: "[WARNING]"         # This string is in the SKILL.md body
+  - matchesPattern: "\\[CRITICAL|WARNING\\]"  # Pattern matches the body
+```
+
+But these will fail:
+
+```yaml
+assertions:
+  - contains: "SQL injection found"   # Not in the SKILL.md body
+  - notContains: "git push"           # Fails if "git push" IS in the body
+  - noErrors: true                    # Fails if "error" appears anywhere in the body
+  - noCriticalIssues: true            # Fails if "critical" appears anywhere (case-insensitive)
+```
+
+**Tips for mock-compatible tests:**
+
+1. Use `contains` assertions that match keywords from your skill's output format section or phase headings
+2. Avoid `noErrors: true` if your skill text mentions "error" in any context (like "error handling" or "syntax errors")
+3. Avoid `noCriticalIssues: true` if your skill defines critical-level output formats
+4. Use `matchesPattern` for structural checks against the skill's documented format
+5. Use `completes: true` freely -- it always passes in mock mode
+
+## Real Example
+
+Running all 6 reference skills (13 scenarios total) in mock mode:
 
 ```
 $ skillkit test examples/
 
-  Found 6 test file(s) in examples/
+  improve skill tests
+  ✓ produces structured audit report
+  ✓ detects stale skills
 
-  Note: Full test execution coming in v0.2
-  Currently validating test file structure only.
+  investigate skill tests
+  ✓ follows phased approach
+  ✓ does not skip to fix
 
-  ✓ examples/review/review.test.yaml
-  ✓ examples/ship/ship.test.yaml
-  ✓ examples/tdd/tdd.test.yaml
-  ✓ examples/investigate/investigate.test.yaml
-  ✓ examples/scaffold/scaffold.test.yaml
-  ✓ examples/improve/improve.test.yaml
+  review skill tests
+  ✓ catches security vulnerability
+  ✓ provides actionable output
+  ✓ includes severity categories
 
-  PASS 6 test file(s) found
+  scaffold skill tests
+  ✓ detects project conventions
+  ✓ generates a valid skill file
+
+  ship skill tests
+  ✓ checks branch before shipping
+  ✓ follows failure protocol
+
+  tdd skill tests
+  ✓ writes test before implementation
+  ✓ follows RED GREEN REFACTOR cycle
+
+  PASS 13 passed, 13 total (9ms)
 ```
 
-**v0.2 (planned):** Full test execution. The `@skillkit/test-harness` package will parse test YAML, manage fixtures, run scenarios in mock and real mode, evaluate all assertion types, and report pass/fail results with diagnostics. The test file format documented in this guide is the target design for v0.2. You can write your test files now and they will work when v0.2 ships.
+## Current Status
+
+**v0.2 (current):** Full test execution in mock mode. The `@skillkit/test-harness` package parses test YAML, runs scenarios against the SKILL.md body, evaluates all assertion types (contains, notContains, matchesPattern, severity, completes, noErrors, noCriticalIssues, maxTokens), and reports pass/fail results with diagnostics.
+
+**v0.3 (planned):** Real mode execution. The test runner will invoke an actual AI model for each scenario, capture the response, and evaluate assertions against real output. This enables catching prompt regressions and validating that skills produce expected output against fixture repositories.

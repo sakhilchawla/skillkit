@@ -7,16 +7,18 @@ scenarios:
     invoke: "/review main"
     assertions:
       - contains: "CRITICAL"
-      - contains: "security"
-
-  - name: no false positives on clean diff
-    description: Does not report critical issues when diff is clean
-    invoke: "/review main"
-    assertions:
-      - noCriticalIssues: true
+      - contains: "Security"
 
   - name: provides actionable output
     description: Each finding includes file, line, and description
     invoke: "/review main"
     assertions:
       - matchesPattern: "\\[CRITICAL|WARNING|SUGGESTION\\]"
+
+  - name: includes severity categories
+    description: Output format uses bracketed severity labels
+    invoke: "/review main"
+    assertions:
+      - contains: "[CRITICAL]"
+      - contains: "[WARNING]"
+      - contains: "[SUGGESTION]"

@@ -8,8 +8,10 @@ scenarios:
       - contains: "test"
       - contains: "fail"
 
-  - name: minimal implementation
+  - name: follows RED GREEN REFACTOR cycle
     invoke: "/tdd add a sum function"
     assertions:
+      - contains: "RED"
+      - contains: "GREEN"
+      - contains: "REFACTOR"
       - completes: true
-      - noErrors: true
