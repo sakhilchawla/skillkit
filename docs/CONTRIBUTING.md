@@ -3,11 +3,48 @@
 ## Development Setup
 
 ```bash
-git clone https://github.com/skillkit/skillkit
+git clone https://github.com/sakhilchawla/skillkit
 cd skillkit
 npm install
-npm run build
 ```
+
+### Available Scripts
+
+```bash
+npm run build          # TypeScript build (tsc --build)
+npm test               # Run all unit tests (vitest)
+npm run test:watch     # Watch mode for development
+npm run test:coverage  # Tests with coverage report (80% threshold)
+npm run lint:self      # Lint the reference skills in examples/
+npm run typecheck      # Type-check without emitting files
+npm run clean          # Clean all build artifacts
+```
+
+### Verify everything works
+
+```bash
+npm run build && npm test && npm run lint:self
+```
+
+You should see: build passes, 80+ tests pass, 6 reference skills lint clean.
+
+## Test Infrastructure
+
+Tests use [vitest](https://vitest.dev/) and live next to the source code:
+
+```
+packages/core/src/__tests__/
+  skillParser.test.ts      # 15 tests — SKILL.md parser
+  agentSkillsSpec.test.ts  # 8 tests — spec validation utilities
+
+packages/linter/src/__tests__/
+  rules.test.ts            # 49 tests — all 15 lint rules
+  engine.test.ts           # 8 tests — lint engine + presets
+```
+
+**When adding code, add tests.** Every lint rule needs at least:
+- A test that triggers the rule (returns results)
+- A test that passes clean (returns empty array)
 
 ## Adding a New Lint Rule
 
@@ -28,27 +65,40 @@ export const myRule: LintRule = {
 };
 ```
 
-2. Add to `packages/linter/src/rules/index.ts`
-3. Add to appropriate preset(s)
-4. Test against the example skills in `examples/`
+2. Register in `packages/linter/src/rules/index.ts` — import and add to `allRules` array
+3. Add to appropriate preset(s) in `packages/linter/src/presets/`
+4. Write tests in `packages/linter/src/__tests__/rules.test.ts` — add a `describe` block
+5. Verify: `npm test && npm run lint:self`
 
 ## Adding a Reference Skill
 
 1. Create `examples/<name>/SKILL.md` — the skill itself
 2. Create `examples/<name>/<name>.test.yaml` — test scenarios
-3. Create `examples/<name>/DESIGN.md` — design decisions
-4. Verify: `npx skillkit lint examples/<name>/`
+3. Create `examples/<name>/DESIGN.md` — design decisions explaining trade-offs
+4. Verify: `npm run lint:self` (lints all skills in examples/)
 
 ## Code Style
 
 - TypeScript strict mode (no `any`)
-- JSDoc on all public APIs
+- JSDoc comments on all public APIs
 - Minimal dependencies (justify any new dep in PR)
 - Each lint rule in its own file
+- Tests next to source code in `__tests__/` directories
+
+## CI Pipeline
+
+GitHub Actions runs on every push/PR to main:
+1. `npm install`
+2. `tsc --build` — TypeScript compilation
+3. `skillkit lint examples/` — self-lint reference skills
+4. `vitest run` — all unit tests
+
+Your PR must pass all 3 checks to merge.
 
 ## PR Process
 
 1. Fork and create a feature branch
-2. Make changes with tests
-3. Run `npm run lint && npm run build`
+2. Make changes **with tests**
+3. Run `npm run build && npm test && npm run lint:self`
 4. Submit PR with description of what and why
+5. CI will verify automatically

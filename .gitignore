@@ -1,6 +1,13 @@
 node_modules/
 dist/
 *.tsbuildinfo
+*.d.ts
+*.d.ts.map
+*.js.map
+# Keep source .ts files, ignore compiled output
+packages/*/dist/
+vitest.config.js
+vitest.config.d.ts
 coverage/
 .nyc_output/
 *.log

@@ -129,7 +129,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 
 | Version | Features | Status |
 |---------|----------|--------|
-| v0.1 | `lint` (15 rules), `init`, core parser | **Current** |
+| v0.1 | `lint` (15 rules), `init`, core parser, 80 tests, CI | **Current** |
 | v0.2 | `test` with YAML scenarios, mock mode, fixtures | Planned |
 | v0.3 | `bench` with quality scoring and regression tracking | Planned |
 | v0.4 | `adapt` with repo scanning and skill generation | Planned |
@@ -154,6 +154,24 @@ Claude Code · Codex CLI · Gemini CLI · Cursor · VS Code · GitHub Copilot ·
 | [Writing Excellent Skills](docs/WRITING_SKILLS.md) | Best practices, anti-patterns, quality rubric |
 | [Architecture](docs/ARCHITECTURE.md) | Package design, data flow, extension points |
 | [Contributing](docs/CONTRIBUTING.md) | How to add rules, fixtures, templates |
+
+## Development
+
+```bash
+git clone https://github.com/sakhilchawla/skillkit
+cd skillkit
+npm install
+
+npm run build          # TypeScript build (tsc --build)
+npm test               # Run 80 unit tests (vitest)
+npm run test:watch     # Watch mode
+npm run test:coverage  # Coverage report
+npm run lint:self      # Lint the reference skills
+npm run typecheck      # Type-check without emitting
+npm run clean          # Clean build artifacts
+```
+
+CI runs automatically on push/PR to main: build → self-lint → test.
 
 ## Contributing
 
