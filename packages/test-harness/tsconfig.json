@@ -7,8 +7,6 @@
   },
   "include": ["src/**/*"],
   "references": [
-    { "path": "../core" },
-    { "path": "../linter" },
-    { "path": "../test-harness" }
+    { "path": "../core" }
   ]
 }
