@@ -166,8 +166,14 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 | v0.1 | `lint` (15 rules), `init`, core parser, CI | Shipped |
 | v0.2 | `test` with YAML scenarios, mock mode, 8 assertion types | Shipped |
 | v0.3 | `bench` with quality scoring and regression tracking | Shipped |
-| v0.4 | `adapt` with repo scanning, stack detection, and skill generation | **Current** |
-| v1.0 | Plugin API, CI/CD integration, cross-tool testing | Planned |
+| v0.4 | `adapt` with repo scanning, stack detection, skill generation | Shipped |
+| v0.5 | Real skill execution (subprocess invocation, fixture repos) | Next |
+| v0.6 | Plugin API for custom rules, scenarios, templates | Planned |
+| v0.7 | npm publish (`npm install -g skillkit`) | Planned |
+| v0.8 | CI/CD integration (GitHub Actions, pre-commit hooks) | Planned |
+| v1.0 | Stable release, cross-tool testing, community governance | Planned |
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan with task breakdowns, known gaps, and contribution opportunities.
 
 ## Compatibility
 
@@ -188,6 +194,7 @@ Claude Code · Codex CLI · Gemini CLI · Cursor · VS Code · GitHub Copilot ·
 | [Writing Excellent Skills](docs/WRITING_SKILLS.md) | Best practices, anti-patterns, quality rubric |
 | [Architecture](docs/ARCHITECTURE.md) | Package design, data flow, extension points |
 | [Contributing](docs/CONTRIBUTING.md) | How to add rules, fixtures, templates |
+| [Roadmap](docs/ROADMAP.md) | Full plan: v0.5–v1.0, known gaps, metrics, contribution opportunities |
 
 ## Development
 
