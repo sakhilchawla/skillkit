@@ -1,8 +1,9 @@
 {
-  "name": "@skillkit/cli",
-  "version": "0.1.0",
-  "description": "CLI for building, testing, and linting Agent Skills",
+  "name": "@skillkit/adapters",
+  "version": "0.4.0",
+  "description": "Detect tech stacks and generate project-specific skills from templates",
   "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -10,18 +11,12 @@
       "default": "./src/index.ts"
     }
   },
-  "bin": {
-    "skillkit": "./src/index.ts"
-  },
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@skillkit/core": "*",
-    "@skillkit/linter": "*",
-    "@skillkit/test-harness": "*",
-    "@skillkit/adapters": "*",
     "yaml": "^2.7.0"
   },
   "engines": {

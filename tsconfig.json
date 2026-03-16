@@ -19,6 +19,7 @@
     { "path": "packages/linter" },
     { "path": "packages/test-harness" },
     { "path": "packages/cli" },
-    { "path": "packages/benchmarks" }
+    { "path": "packages/benchmarks" },
+    { "path": "packages/adapters" }
   ]
 }

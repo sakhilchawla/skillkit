@@ -62,14 +62,45 @@ Key concepts:
 - **Mock mode**: Uses SKILL.md body as simulated output (fast, free, no API key)
 - **Real mode**: Planned for v0.3 (invokes actual AI model)
 
+### @skillkit/benchmarks (v0.3 -- shipped)
+Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions. Package at `packages/benchmarks/`.
+
+### @skillkit/adapters (v0.4 -- current)
+Repo scanning and project-adapted skill generation. Detects your tech stack and conventions, then renders parameterized templates into project-specific skills.
+
+Architecture:
+
+```
+packages/adapters/src/
+├── types.ts                    # DetectedStack, TemplateContext, AdaptResult
+├── detectors/
+│   ├── stackDetector.ts        # Scans package.json, Cargo.toml, go.mod, etc.
+│   │                           # Detects: language, framework, styling, testing,
+│   │                           # state management, build tool, monorepo, package manager
+│   ├── conventionDetector.ts   # Scans source files for naming, directories, patterns
+│   │                           # Detects: naming conventions, component/test/module dirs,
+│   │                           # export style, barrel exports, test suffix, CSS modules
+│   └── index.ts                # Re-exports detectStack, detectConventions
+├── templates/
+│   ├── createComponent.ts      # Component scaffold template (React/Vue/Svelte-aware)
+│   ├── createModule.ts         # API module/service template (TS/JS/Python)
+│   ├── createTest.ts           # Test file template (Vitest/Jest/pytest/Go/Rust)
+│   └── index.ts                # Template registry with alias resolution
+├── generator/
+│   ├── templateEngine.ts       # Handlebars-subset renderer ({{var}}, {{#if}}, {{#if (eq)}})
+│   ├── adapter.ts              # adaptTemplate() and adaptAndSave() orchestrator
+│   └── index.ts                # Re-exports
+└── index.ts                    # Public API
+```
+
+Key design decisions:
+- **Read-only scanning**: Detectors only read files (package.json, tsconfig.json, source files). No code execution, no installs.
+- **Confidence signals**: Each detection produces signals with confidence scores for debugging and conflict resolution.
+- **Alias support**: Users type `skillkit adapt component` (shorthand) or `skillkit adapt create-component` (full name).
+- **Minimal template engine**: Supports `{{var}}`, `{{#if var}}`, `{{#if (eq var "value")}}` -- enough for skill templates without pulling in Handlebars.
+
 ### @skillkit/cli
 Command-line interface routing to the above packages. Handles file discovery, output formatting, and exit codes.
-
-### @skillkit/benchmarks (v0.3 -- in development)
-Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions. Package scaffold at `packages/benchmarks/`.
-
-### @skillkit/adapters (v0.4)
-Repo scanning and skill generation: detect stack, apply parameterized templates, output project-specific skills.
 
 ## Configuration
 
@@ -116,7 +147,7 @@ export const myRule: LintRule = {
 
 ## Test Infrastructure
 
-139 unit tests using vitest, organized by package:
+139+ unit tests using vitest, organized by package:
 
 ```
 packages/core/src/__tests__/
@@ -153,8 +184,8 @@ CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `v
 |---------|-----------|-----------------|--------|
 | v0.1 | Foundation | Parser, linter (15 rules), CLI, init, CI | Shipped |
 | v0.2 | Testing | YAML test harness, mock mode, 8 assertion types, 139 tests | Shipped |
-| v0.3 | Quality | Benchmarking, scoring, regression tracking | In development |
-| v0.4 | Generation | Repo scanning, adaptive skill generation | Planned |
+| v0.3 | Quality | Benchmarking, scoring, regression tracking | Shipped |
+| v0.4 | Generation | Repo scanning, stack detection, adaptive skill generation | **Current** |
 | v1.0 | Ecosystem | Plugin API, CI/CD, cross-tool testing | Planned |
 
 ## Competitive Positioning
