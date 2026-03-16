@@ -17,6 +17,7 @@
   "references": [
     { "path": "packages/core" },
     { "path": "packages/linter" },
+    { "path": "packages/test-harness" },
     { "path": "packages/cli" }
   ]
 }
