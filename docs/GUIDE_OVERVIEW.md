@@ -223,6 +223,22 @@ review/
   DESIGN.md             # Design notes (optional, for humans)
 ```
 
+## Development
+
+If you want to contribute or hack on skillkit itself:
+
+```bash
+git clone https://github.com/sakhilchawla/skillkit
+cd skillkit
+npm install
+
+npm run build          # TypeScript compilation
+npm test               # 80 unit tests (~170ms)
+npm run lint:self      # Lint reference skills
+```
+
+CI runs automatically on push/PR: build → self-lint → test. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
 ## Links to detailed guides
 
 - [GUIDE_INIT.md](GUIDE_INIT.md) -- Scaffolding new skills with `skillkit init`

@@ -112,6 +112,22 @@ export const myRule: LintRule = {
 };
 ```
 
+## Test Infrastructure
+
+80 unit tests using vitest, organized by package:
+
+```
+packages/core/src/__tests__/
+  skillParser.test.ts      # 15 tests — parsing, validation, edge cases
+  agentSkillsSpec.test.ts  # 8 tests — spec constants, tool validation
+
+packages/linter/src/__tests__/
+  rules.test.ts            # 49 tests — all 15 lint rules (trigger + pass cases)
+  engine.test.ts           # 8 tests — engine, presets, overrides, sorting
+```
+
+CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `vitest run`
+
 ## Design Principles
 
 1. **Infrastructure, not content** — We ship tools, not skills
@@ -124,7 +140,7 @@ export const myRule: LintRule = {
 
 | Version | Milestone | Key Deliverable |
 |---------|-----------|-----------------|
-| v0.1 | Foundation | Parser, linter (15 rules), CLI, init |
+| v0.1 | Foundation | Parser, linter (15 rules), CLI, init, 80 tests, CI |
 | v0.2 | Testing | YAML test harness, mock mode, fixtures |
 | v0.3 | Quality | Benchmarking, scoring, regression tracking |
 | v0.4 | Generation | Repo scanning, adaptive skill generation |
