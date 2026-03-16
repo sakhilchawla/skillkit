@@ -5,15 +5,17 @@ import { lintCommand } from './commands/lint.js';
 import { testCommand } from './commands/test.js';
 import { initCommand } from './commands/init.js';
 import { adaptCommand } from './commands/adapt.js';
+import { benchCommand } from './commands/bench.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.3.0';
 
 const HELP = `${LOGO}
 ${bold('Usage:')} skillkit <command> [options]
 
 ${bold('Commands:')}
   ${cyan('lint')} [path]              Lint SKILL.md files against spec and best practices
-  ${cyan('test')} [path]              Run skill test definitions (v0.2)
+  ${cyan('test')} [path]              Run skill test definitions
+  ${cyan('bench')} <config>           Benchmark skill quality (precision/recall/F1)
   ${cyan('init')} <name>              Scaffold a new skill
   ${cyan('adapt')} <template> <repo>  Generate project-adapted skills (v0.4)
 
@@ -26,6 +28,7 @@ ${bold('Examples:')}
   skillkit lint ~/.claude/skills      Lint global skills
   skillkit init review                Create a new review skill
   skillkit test examples/             Run tests in examples directory
+  skillkit bench review-bench.yaml   Benchmark a skill's quality
 
 ${dim('Documentation: https://github.com/skillkit/skillkit')}
 `;
@@ -55,6 +58,9 @@ async function main(): Promise<void> {
       break;
     case 'init':
       await initCommand(commandArgs);
+      break;
+    case 'bench':
+      await benchCommand(commandArgs);
       break;
     case 'adapt':
       await adaptCommand(commandArgs);

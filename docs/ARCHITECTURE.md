@@ -9,22 +9,22 @@ The Agent Skills open standard (agentskills.io) is adopted by 27+ AI coding tool
 ## System Overview
 
 ```
-┌─────────────────────────────────────────────────┐
-│                  @skillkit/cli                   │
-│  ┌──────┐ ┌──────┐ ┌──────┐ ┌───────┐         │
-│  │ lint │ │ test │ │ init │ │ adapt │          │
-│  └──┬───┘ └──┬───┘ └──────┘ └───┬───┘         │
-│     │        │                   │              │
-├─────┼────────┼───────────────────┼──────────────┤
-│     ▼        ▼                   ▼              │
-│ @skillkit/ @skillkit/      @skillkit/           │
-│  linter    test-harness     adapters            │
-│     │        │                   │              │
-├─────┼────────┼───────────────────┼──────────────┤
-│     └────────┴───────────────────┘              │
-│              @skillkit/core                      │
-│         (parser, types, spec)                    │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                    @skillkit/cli                      │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌───────┐ ┌───────┐   │
+│  │ lint │ │ test │ │ init │ │ bench │ │ adapt │    │
+│  └──┬───┘ └──┬───┘ └──────┘ └───┬───┘ └───┬───┘   │
+│     │        │                   │          │        │
+├─────┼────────┼───────────────────┼──────────┼────────┤
+│     ▼        ▼                   ▼          ▼        │
+│ @skillkit/ @skillkit/      @skillkit/  @skillkit/    │
+│  linter    test-harness    benchmarks   adapters     │
+│     │        │                   │          │        │
+├─────┼────────┼───────────────────┼──────────┼────────┤
+│     └────────┴───────────────────┴──────────┘        │
+│                  @skillkit/core                       │
+│             (parser, types, spec)                     │
+└──────────────────────────────────────────────────────┘
 ```
 
 ## Packages
@@ -51,20 +51,22 @@ Rules are standalone modules. Adding a new rule = create one file + register in 
 
 Three presets: `strict` (all rules at default), `recommended` (balanced), `minimal` (spec only).
 
-### @skillkit/test-harness (v0.2)
-YAML-based test definitions for skills. Tests run skills against fixture repositories and evaluate output.
+### @skillkit/test-harness (v0.2 -- shipped)
+YAML-based test definitions for skills. In mock mode, reads the SKILL.md body and evaluates assertions against it. Supports 8 assertion types.
 
 Key concepts:
 - **Test Definition**: YAML file listing scenarios for a skill
 - **Scenario**: Input (skill invocation) + assertions (expected output properties)
-- **Fixture**: A sample repository to run the skill against
-- **Assertion**: Matcher functions (contains, pattern, severity, completion)
+- **Fixture**: A sample repository to run the skill against (used in real mode)
+- **Assertion**: Matcher functions (contains, notContains, matchesPattern, severity, completes, noErrors, noCriticalIssues, maxTokens)
+- **Mock mode**: Uses SKILL.md body as simulated output (fast, free, no API key)
+- **Real mode**: Planned for v0.3 (invokes actual AI model)
 
 ### @skillkit/cli
 Command-line interface routing to the above packages. Handles file discovery, output formatting, and exit codes.
 
-### @skillkit/benchmarks (v0.3)
-Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions.
+### @skillkit/benchmarks (v0.3 -- in development)
+Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions. Package scaffold at `packages/benchmarks/`.
 
 ### @skillkit/adapters (v0.4)
 Repo scanning and skill generation: detect stack, apply parameterized templates, output project-specific skills.
@@ -114,7 +116,7 @@ export const myRule: LintRule = {
 
 ## Test Infrastructure
 
-80 unit tests using vitest, organized by package:
+139 unit tests using vitest, organized by package:
 
 ```
 packages/core/src/__tests__/
@@ -124,6 +126,15 @@ packages/core/src/__tests__/
 packages/linter/src/__tests__/
   rules.test.ts            # 49 tests — all 15 lint rules (trigger + pass cases)
   engine.test.ts           # 8 tests — engine, presets, overrides, sorting
+
+packages/test-harness/src/__tests__/
+  assertions.test.ts       # Assertion evaluation (all 8 types)
+  loader.test.ts           # YAML test definition parsing and validation
+
+packages/benchmarks/src/__tests__/
+  scorer.test.ts           # Precision/recall/F1 scoring
+  tracker.test.ts          # Regression detection
+  comparator.test.ts       # A/B skill comparison
 ```
 
 CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `vitest run`
@@ -138,13 +149,13 @@ CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `v
 
 ## Roadmap
 
-| Version | Milestone | Key Deliverable |
-|---------|-----------|-----------------|
-| v0.1 | Foundation | Parser, linter (15 rules), CLI, init, 80 tests, CI |
-| v0.2 | Testing | YAML test harness, mock mode, fixtures |
-| v0.3 | Quality | Benchmarking, scoring, regression tracking |
-| v0.4 | Generation | Repo scanning, adaptive skill generation |
-| v1.0 | Ecosystem | Plugin API, CI/CD, cross-tool testing |
+| Version | Milestone | Key Deliverable | Status |
+|---------|-----------|-----------------|--------|
+| v0.1 | Foundation | Parser, linter (15 rules), CLI, init, CI | Shipped |
+| v0.2 | Testing | YAML test harness, mock mode, 8 assertion types, 139 tests | Shipped |
+| v0.3 | Quality | Benchmarking, scoring, regression tracking | In development |
+| v0.4 | Generation | Repo scanning, adaptive skill generation | Planned |
+| v1.0 | Ecosystem | Plugin API, CI/CD, cross-tool testing | Planned |
 
 ## Competitive Positioning
 

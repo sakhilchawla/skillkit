@@ -721,17 +721,19 @@ $ skillkit bench review.bench.yaml
 
 ## Current Status
 
-`skillkit bench` is **planned for v0.3**. Here is what is available now and what is coming:
+`skillkit bench` is **planned for v0.3** and is currently in development in the `@skillkit/benchmarks` package. Here is what is available now and what is coming:
 
 | Capability | Status | Available In |
 |------------|--------|--------------|
-| Lint skills for quality | Available now | v0.1 (`skillkit lint`) |
-| Declarative test scenarios | Planned | v0.2 (`skillkit test`) |
-| Precision/recall scoring | Planned | v0.3 (`skillkit bench`) |
-| A/B comparison | Planned | v0.3 (`skillkit bench --compare`) |
-| Regression detection | Planned | v0.3 (`skillkit bench` + baselines) |
+| Lint skills for quality | Available | v0.1 (`skillkit lint`) |
+| Declarative test scenarios (mock mode) | Available | v0.2 (`skillkit test`) |
+| Precision/recall scoring | In development | v0.3 (`skillkit bench`) |
+| A/B comparison | In development | v0.3 (`skillkit bench --compare`) |
+| Regression detection | In development | v0.3 (`skillkit bench` + baselines) |
 | HTML dashboard | Planned | v0.3 (`--format html`) |
 | CI integration helpers | Planned | v0.3 / v1.0 |
+
+> **Note:** The benchmarks package scaffold is at `packages/benchmarks/` in the repository. Track development progress there.
 
 **What you can do today:**
 

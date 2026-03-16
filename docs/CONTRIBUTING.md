@@ -26,11 +26,11 @@ npm run clean          # Clean all build artifacts
 npm run build && npm test && npm run lint:self
 ```
 
-You should see: build passes, 80+ tests pass, 6 reference skills lint clean.
+You should see: build passes, 139+ tests pass, 6 reference skills lint clean.
 
 ## Test Infrastructure
 
-Tests use [vitest](https://vitest.dev/) and live next to the source code:
+Tests use [vitest](https://vitest.dev/) and live next to the source code. Currently 139 tests across 9 test files:
 
 ```
 packages/core/src/__tests__/
@@ -40,6 +40,15 @@ packages/core/src/__tests__/
 packages/linter/src/__tests__/
   rules.test.ts            # 49 tests — all 15 lint rules
   engine.test.ts           # 8 tests — lint engine + presets
+
+packages/test-harness/src/__tests__/
+  assertions.test.ts       # Assertion evaluation (all 8 types: contains, notContains, matchesPattern, severity, completes, noErrors, noCriticalIssues, maxTokens)
+  loader.test.ts           # YAML test definition parsing and validation
+
+packages/benchmarks/src/__tests__/
+  scorer.test.ts           # Precision/recall/F1 scoring
+  tracker.test.ts          # Regression detection
+  comparator.test.ts       # A/B skill comparison
 ```
 
 **When adding code, add tests.** Every lint rule needs at least:

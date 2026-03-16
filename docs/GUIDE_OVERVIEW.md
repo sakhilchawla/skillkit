@@ -146,32 +146,35 @@ Fix any errors that come up. Common issues for new skills:
 - Bash access without safety constraints in the body
 - Missing argument hint
 
-### Step 5: Test the skill (coming in v0.2)
+### Step 5: Test the skill
 
 ```bash
 skillkit test review/
 ```
 
-In v0.1, this validates that your test file (`review.test.yaml`) is structurally correct. In v0.2, it will actually run your skill against fixture repositories and check the assertions you defined.
+This runs your skill's test scenarios in mock mode. In mock mode, the SKILL.md body is used as simulated output and all assertions are evaluated against it. This validates that your test file is structurally correct and that your assertions match content in the skill definition.
 
-To prepare for v0.2, open `review/review.test.yaml` and add scenarios that reflect how your skill will be used:
+Open `review/review.test.yaml` and add scenarios that reflect how your skill will be used:
 
 ```yaml
 name: review tests
 skill: ./SKILL.md
 
 scenarios:
-  - name: catches security issues
+  - name: output includes severity levels
     invoke: "/review main"
     assertions:
-      - contains: "CRITICAL"
-      - contains: "security"
+      - contains: "[CRITICAL]"
+      - contains: "[WARNING]"
 
-  - name: clean code gets no false positives
+  - name: follows phased approach
     invoke: "/review main"
     assertions:
-      - noCriticalIssues: true
+      - contains: "Critical Review"
+      - completes: true
 ```
+
+Note: In mock mode, assertions must match strings present in the SKILL.md body itself. See [GUIDE_TEST.md](GUIDE_TEST.md) for details on writing mock-compatible tests.
 
 ## Command reference
 
@@ -179,7 +182,7 @@ scenarios:
 |---------|-------------|--------|----------------|
 | `skillkit lint [path]` | Validate SKILL.md files against 15 rules for spec compliance, security, best practices, and performance. Three presets: `strict`, `recommended`, `minimal`. | Available | [GUIDE_LINT.md](GUIDE_LINT.md) |
 | `skillkit init <name>` | Scaffold a new skill with a SKILL.md template and test file. | Available | [GUIDE_INIT.md](GUIDE_INIT.md) |
-| `skillkit test [path]` | Run declarative test scenarios defined in `.test.yaml` files. | v0.2 (structure validation available now) | [GUIDE_TEST.md](GUIDE_TEST.md) |
+| `skillkit test [path]` | Run declarative test scenarios defined in `.test.yaml` files. Mock mode evaluates assertions against the SKILL.md body. | Working (mock mode) | [GUIDE_TEST.md](GUIDE_TEST.md) |
 | `skillkit bench [path]` | Measure skill quality with precision, recall, and token efficiency scoring. Compare skills and detect regressions. | v0.3 | [GUIDE_BENCH.md](GUIDE_BENCH.md) |
 | `skillkit adapt <template> <repo>` | Scan a repository, detect its stack, and generate skills tailored to its conventions. | v0.4 | [GUIDE_ADAPT.md](GUIDE_ADAPT.md) |
 
@@ -233,7 +236,7 @@ cd skillkit
 npm install
 
 npm run build          # TypeScript compilation
-npm test               # 80 unit tests (~170ms)
+npm test               # 139 unit tests (~200ms)
 npm run lint:self      # Lint reference skills
 ```
 
