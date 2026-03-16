@@ -26,6 +26,9 @@ npx skillkit init review
 
 # Run skill tests (mock mode)
 npx skillkit test examples/
+
+# Generate a project-adapted skill
+npx skillkit adapt component
 ```
 
 ## Features
@@ -92,9 +95,36 @@ scenarios:
 
 Mock mode (default) evaluates assertions against the SKILL.md body. 8 assertion types: `contains`, `notContains`, `matchesPattern`, `severity`, `completes`, `noErrors`, `noCriticalIssues`, `maxTokens`.
 
-### `skillkit adapt` — Generate project-specific skills (v0.4)
+### `skillkit adapt` — Generate project-specific skills
 
 Scans your repo, detects your stack, and generates skills tailored to YOUR conventions.
+
+```
+$ skillkit adapt component
+
+Scanning /path/to/my-project
+
+Detected stack:
+  Language:       typescript
+  Framework:      next (App Router)
+  Styling:        tailwind
+  Testing:        vitest
+  State:          zustand
+  Build tool:     turborepo
+  Monorepo:       yes
+  Package manager: npm
+
+Generating skill from template: create-component
+
+Generated: .claude/skills/create-component/SKILL.md
+  Template:  create-component
+  Stack:     typescript / next / tailwind / vitest
+  Output:    .claude/skills/create-component/SKILL.md
+
+  Try it: /create-component MyItem
+```
+
+Three built-in templates: `component`, `module`, `test`. The generated skill uses your real paths, your real naming conventions, and your real test framework -- no manual editing required.
 
 ### `skillkit bench` — Quality benchmarking (v0.3)
 
@@ -121,10 +151,10 @@ Each includes a SKILL.md, test definition, and design document explaining trade-
 packages/
   core/          @skillkit/core      — SKILL.md parser, types, spec validation
   linter/        @skillkit/linter    — 15 lint rules, 3 presets, engine
-  cli/           @skillkit/cli       — CLI commands (lint, test, init, adapt)
+  cli/           @skillkit/cli       — CLI commands (lint, test, init, bench, adapt)
   test-harness/  @skillkit/test-harness — Test runner, assertions, fixtures (v0.2)
   benchmarks/    @skillkit/benchmarks   — Quality scoring, comparison (v0.3)
-  adapters/      @skillkit/adapters     — Repo scanning, skill generation (v0.4)
+  adapters/      @skillkit/adapters     — Repo scanning, stack detection, skill generation (v0.4)
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
@@ -134,9 +164,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full design.
 | Version | Features | Status |
 |---------|----------|--------|
 | v0.1 | `lint` (15 rules), `init`, core parser, CI | Shipped |
-| v0.2 | `test` with YAML scenarios, mock mode, 8 assertion types, 139 tests | **Current** |
-| v0.3 | `bench` with quality scoring and regression tracking | In development |
-| v0.4 | `adapt` with repo scanning and skill generation | Planned |
+| v0.2 | `test` with YAML scenarios, mock mode, 8 assertion types, 139 tests | Shipped |
+| v0.3 | `bench` with quality scoring and regression tracking | Shipped |
+| v0.4 | `adapt` with repo scanning, stack detection, and skill generation | **Current** |
 | v1.0 | Plugin API, CI/CD integration, cross-tool testing | Planned |
 
 ## Compatibility
@@ -167,7 +197,7 @@ cd skillkit
 npm install
 
 npm run build          # TypeScript build (tsc --build)
-npm test               # Run 139 unit tests (vitest)
+npm test               # Run 139+ unit tests (vitest)
 npm run test:watch     # Watch mode
 npm run test:coverage  # Coverage report
 npm run lint:self      # Lint the reference skills
