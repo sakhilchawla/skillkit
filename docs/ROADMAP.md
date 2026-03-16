@@ -104,30 +104,28 @@ test:
 
 ## Known Gaps & Technical Debt
 
-### From the devil's advocate review (pre-build research)
+### Design Decisions
 
-| Concern | Severity | Current status |
-|---------|----------|---------------|
-| Market saturation (skill libraries) | Addressed | We pivoted to infrastructure, not a library |
-| Most skills are gstack derivatives | Addressed | Reference skills are original, serve as examples only |
-| No testing framework for skills | **Partially addressed** | Mock mode works, real mode not yet implemented |
-| Self-improvement is a gimmick | **Mitigated** | `/improve` example uses measurable criteria only (staleness, path accuracy, redundancy) |
-| Maintenance sustainability | **Open risk** | Need contributors or a dedicated maintainer |
-| Compatibility fragility | **Open risk** | Agent Skills spec may change, breaking all skills |
-| Scaffold skills non-portable | **Addressed** | `skillkit adapt` generates project-specific skills from templates |
+| Area | Status | Details |
+|------|--------|---------|
+| Infrastructure over content | Core principle | skillkit ships tools for building skills, not a library of skills. Reference skills exist as examples only. |
+| Mock-first testing | **Partially addressed** | Mock mode validates structure and assertion logic. Real mode (actual AI invocation) not yet implemented. |
+| Measurable improvement only | Principle | The `/improve` example uses concrete, measurable criteria (file existence, git age, description overlap) — not subjective quality judgments. |
+| Maintenance sustainability | **Open risk** | Open source projects need active contributors. Community building is a priority. |
+| Spec compatibility | **Open risk** | The Agent Skills spec is evolving. Upstream changes could require updates to the linter and parser. |
+| Portable scaffold skills | Addressed | `skillkit adapt` generates project-specific skills from templates rather than shipping non-portable hardcoded skills. |
 
-### From real-world testing (microfrontends monorepo)
+### Bugs Fixed in v0.4.1
 
-| Bug found | Fixed in | Root cause |
-|-----------|----------|------------|
-| Stack detector missed all deps in monorepo | v0.4.1 | Only read root package.json, not child packages |
-| Convention detector missed component dirs | v0.4.1 | Only searched root-level directories |
-| Template `{{/if}}` leaked into output | v0.4.1 | No `{{else}}` support in template engine |
-| Template nesting broke regex matching | v0.4.1 | Refactored templates to avoid nesting |
+| Bug | Root cause | Fix |
+|-----|-----------|-----|
+| Stack detector missed dependencies in monorepos | Only read root package.json, not child workspace packages | Now scans all workspace child package.json files |
+| Convention detector missed directories in monorepos | Only searched root-level directories | Now searches inside monorepo child packages |
+| Template `{{/if}}` leaked into generated output | Template engine didn't support `{{else}}` in conditionals | Added `{{else}}` support and refactored templates to avoid nesting |
 
-### Untested scenarios
+### Untested Scenarios (Help Wanted)
 
-- Python projects (pyproject.toml detection implemented but not tested against real repo)
+- Python projects (pyproject.toml detection implemented but not tested against real repos)
 - Go projects (go.mod detection implemented but not tested)
 - Rust projects (Cargo.toml detection implemented but not tested)
 - Non-monorepo Node.js projects (should work but not verified end-to-end)
