@@ -465,27 +465,82 @@ Mock mode is fast (milliseconds), free (no API calls), and runs anywhere (no API
 npx skillkit test examples/ --real
 ```
 
-In real mode, skillkit invokes the actual AI model for each scenario. This means:
+In real mode, skillkit invokes the actual AI model for each scenario via subprocess. This means:
 
-1. Each scenario calls the model with the skill's instructions and the invoke command
-2. The model's response is captured
+1. The configured provider CLI is spawned as a subprocess with the skill's instructions and the invoke command
+2. The model's response is captured from stdout
 3. All assertions are evaluated against the real response
 
 Real mode requires an API key and costs money per run. It is slower (seconds to minutes per scenario) but catches real regressions.
 
-Configure the model in `skillkit.config.yaml`:
+#### Provider flags
+
+Real mode supports the following flags:
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--real` | off | Enable real mode (required) |
+| `--provider <name>` | `claude-code` | Which AI coding tool to invoke |
+| `--command <cmd>` | auto-detected from provider | Custom command override |
+| `--timeout <ms>` | `120000` | Per-scenario timeout in milliseconds |
+
+#### Available providers
+
+| Provider | Command | Notes |
+|----------|---------|-------|
+| `claude-code` | `claude` | Default. Anthropic's Claude Code CLI |
+| `codex` | `codex` | OpenAI Codex CLI |
+| `gemini-cli` | `gemini` | Google Gemini CLI |
+| `custom` | (set via `--command`) | Any CLI that accepts skill input on stdin |
+
+#### Examples
+
+```bash
+# Run with Claude Code (default provider)
+npx skillkit test examples/ --real
+
+# Run with a specific provider
+npx skillkit test examples/ --real --provider codex
+
+# Run with a custom command and longer timeout
+npx skillkit test examples/ --real --command ./my-cli --timeout 180000
+
+# Run just one test directory with real mode
+npx skillkit test examples/review/ --real --provider claude-code
+```
+
+#### Example output
+
+```
+$ skillkit test examples/review/ --real --provider claude-code
+
+  Found 1 test file(s) in examples/review/
+  Mode: real
+  Provider: claude-code
+  Timeout: 120000ms
+
+  review skill tests
+    ✓ catches security vulnerability (4230ms)
+    ✓ no false positives on clean diff (3810ms)
+    ✓ provides actionable output (5120ms)
+
+  PASS 3 passed, 3 total (13160ms)
+```
+
+Configure defaults in `skillkit.config.yaml`:
 
 ```yaml
 test:
   mock: false                    # Use real mode by default
-  model: claude-sonnet-4-6     # Which model to use
-  timeout: 60000                 # Per-scenario timeout in milliseconds
+  provider: claude-code          # Which provider to use
+  command: "claude"              # Custom command override
+  timeout: 120000                # Per-scenario timeout in milliseconds
 ```
 
 Or override per run:
 
 ```bash
-npx skillkit test examples/ --real --model claude-sonnet-4-6 --timeout 90000
+npx skillkit test examples/ --real --provider codex --timeout 90000
 ```
 
 **When to use each mode:**
@@ -729,6 +784,6 @@ $ skillkit test examples/
 
 ## Current Status
 
-**v0.2 (current):** Full test execution in mock mode. The `@skillkit/test-harness` package parses test YAML, runs scenarios against the SKILL.md body, evaluates all assertion types (contains, notContains, matchesPattern, severity, completes, noErrors, noCriticalIssues, maxTokens), and reports pass/fail results with diagnostics.
+**v0.2 (shipped):** Full test execution in mock mode. The `@skillkit/test-harness` package parses test YAML, runs scenarios against the SKILL.md body, evaluates all assertion types (contains, notContains, matchesPattern, severity, completes, noErrors, noCriticalIssues, maxTokens), and reports pass/fail results with diagnostics.
 
-**v0.3 (planned):** Real mode execution. The test runner will invoke an actual AI model for each scenario, capture the response, and evaluate assertions against real output. This enables catching prompt regressions and validating that skills produce expected output against fixture repositories.
+**v0.5 (current):** Real mode execution. The test runner invokes the actual AI model via subprocess for each scenario using the `--real` flag. Supports `--provider`, `--command`, and `--timeout` flags. Provider abstraction handles Claude Code, Codex, Gemini CLI, and custom commands. Captures stdout, evaluates assertions against real output, and reports results with timing.

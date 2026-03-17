@@ -26,11 +26,11 @@ npm run clean          # Clean all build artifacts
 npm run build && npm test && npm run lint:self
 ```
 
-You should see: build passes, 175+ tests pass, 6 reference skills lint clean.
+You should see: build passes, 195+ tests pass, 6 reference skills lint clean.
 
 ## Test Infrastructure
 
-Tests use [vitest](https://vitest.dev/) and live next to the source code. Currently 175+ tests across 12 test files:
+Tests use [vitest](https://vitest.dev/) and live next to the source code. Currently 195+ tests across 13+ test files:
 
 ```
 packages/core/src/__tests__/
@@ -44,6 +44,7 @@ packages/linter/src/__tests__/
 packages/test-harness/src/__tests__/
   assertions.test.ts       # Assertion evaluation (all 8 types: contains, notContains, matchesPattern, severity, completes, noErrors, noCriticalIssues, maxTokens)
   loader.test.ts           # YAML test definition parsing and validation
+  runner.test.ts           # Test runner (mock + real mode, invoker config)
 
 packages/benchmarks/src/__tests__/
   scorer.test.ts           # Precision/recall/F1 scoring
