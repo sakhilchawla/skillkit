@@ -1,6 +1,6 @@
 # Benchmarking Skills with `skillkit bench`
 
-> **Status: Shipped in v0.3.** The benchmarking package is available. See [Current Status](#current-status) at the bottom for details.
+> **Status: Fully working in v0.5.** The benchmarking package and CLI are both operational. The CLI loads YAML configs, runs benchmarks (mock or real), supports A/B comparison, baseline regression tracking, and multiple output formats.
 
 ## What It Does
 
@@ -719,17 +719,115 @@ $ skillkit bench review.bench.yaml
   PASS
 ```
 
+## CLI Reference
+
+### Usage
+
+```bash
+skillkit bench <config.yaml> [options]
+```
+
+### Options
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--real` | off (mock mode) | Run in real mode (invoke actual AI model) |
+| `--compare <skill>` | — | A/B compare against another skill SKILL.md |
+| `--save <file>` | — | Save results as baseline JSON for future regression checks |
+| `--baseline <file>` | — | Load baseline and check for regression |
+| `--format <type>` | `console` | Output format: `console`, `json`, `markdown` |
+| `--runs <n>` | from config or 1 | Number of runs to average (overrides config value) |
+
+### Config YAML Format
+
+```yaml
+name: review benchmark
+skill: ./review/SKILL.md
+runs: 3
+
+groundTruth:
+  expectedFindings:
+    - file: src/api.ts
+      type: security
+      description: SQL injection
+  cleanFiles: [src/utils.ts]
+
+thresholds:
+  f1: 0.70
+  precision: 0.60
+  recall: 0.60
+
+scenarios:
+  - name: XSS vulnerability
+    fixture: ./benchmarks/xss-app/
+    invoke: "/review main"
+    ground-truth: ./benchmarks/xss-app/ground-truth.yaml
+```
+
+### Examples
+
+```bash
+# Basic benchmark run (mock mode)
+skillkit bench review-bench.yaml
+
+# Real mode — invoke actual AI model
+skillkit bench review-bench.yaml --real
+
+# A/B comparison between two skills
+skillkit bench review-bench.yaml --compare ./v2/SKILL.md
+
+# Save results as baseline
+skillkit bench review-bench.yaml --save baseline.json
+
+# Check for regression against saved baseline
+skillkit bench review-bench.yaml --baseline baseline.json
+
+# Output as JSON for CI pipelines
+skillkit bench review-bench.yaml --format json
+
+# Output as markdown for PR comments
+skillkit bench review-bench.yaml --format markdown
+
+# Override number of runs
+skillkit bench review-bench.yaml --runs 5
+```
+
+### Example Output
+
+```
+$ skillkit bench review-bench.yaml
+
+  review skill benchmark
+  Skill: ./review/SKILL.md
+  Runs: 3
+  Mode: mock
+
+  ────────────────────────────────
+  Precision:   83.3%   (5/6 findings were real)
+  Recall:      71.4%   (5/7 real issues found)
+  F1 Score:    76.9%
+  Avg Tokens:  2,847 per scenario
+  ────────────────────────────────
+  3 scenarios, 3 runs each (averaged)
+
+  PASS  Quality above threshold (F1 >= 70%)
+```
+
 ## Current Status
 
-`skillkit bench` **shipped in v0.3.** The `@skillkit/benchmarks` package provides scoring, comparison, and regression tracking APIs.
+`skillkit bench` is **fully working in v0.5.** Both the `@skillkit/benchmarks` package and the CLI are operational.
 
 | Capability | Status | Available In |
 |------------|--------|--------------|
 | Lint skills for quality | Shipped | v0.1 (`skillkit lint`) |
 | Declarative test scenarios (mock mode) | Shipped | v0.2 (`skillkit test`) |
-| Precision/recall scoring | Shipped | v0.3 (`skillkit bench`) |
-| A/B comparison | Shipped | v0.3 (`skillkit bench --compare`) |
-| Regression detection | Shipped | v0.3 (`skillkit bench` + baselines) |
+| Precision/recall scoring | Shipped | v0.3 (`skillkit bench` API) |
+| A/B comparison | Shipped | v0.3 (`skillkit bench --compare` API) |
+| Regression detection | Shipped | v0.3 (`skillkit bench` + baselines API) |
+| Bench CLI with YAML config | **Shipped** | v0.5 (`skillkit bench <config.yaml>`) |
+| Real mode benchmarking | **Shipped** | v0.5 (`skillkit bench --real`) |
+| CLI --compare, --save, --baseline | **Shipped** | v0.5 |
+| CLI --format (console, json, markdown) | **Shipped** | v0.5 |
 | HTML dashboard | Planned | v1.0 (`--format html`) |
 | CI integration helpers | Planned | v1.0 |
 
@@ -737,10 +835,12 @@ The benchmarks package is at `packages/benchmarks/` in the repository.
 
 **Getting started:**
 
-1. **Build your test corpus.** Create fixture directories with known bugs and clean code. Define ground truth YAML files. This is the hard part and it is not tool-dependent.
+1. **Write a YAML config.** Define your skill path, ground truth, scenarios, and thresholds. See the [Config YAML Format](#config-yaml-format) section above.
 
-2. **Use `skillkit lint`** to validate your skills against the 15 built-in rules. Linting catches structural problems (missing descriptions, unrestricted Bash, hardcoded paths) that benchmarking would also penalize.
+2. **Run in mock mode first.** `skillkit bench review-bench.yaml` validates your config and scores against the SKILL.md body. Fast and free.
 
-3. **Use `skillkit test`** to write declarative scenario tests. Test scenarios are a subset of benchmark scenarios -- you can promote your test scenarios to benchmarks by adding ground truth files.
+3. **Run in real mode.** `skillkit bench review-bench.yaml --real` invokes the actual AI model. Costs API tokens but gives real quality scores.
 
-4. **Design your ground truth carefully.** The quality of a benchmark is only as good as the answer key. Invest time in curating realistic scenarios with well-defined expected findings. A benchmark with sloppy ground truth will give you misleading scores.
+4. **Save a baseline.** `skillkit bench review-bench.yaml --save baseline.json` records your scores. On future runs, use `--baseline baseline.json` to detect regressions.
+
+5. **Design your ground truth carefully.** The quality of a benchmark is only as good as the answer key. Invest time in curating realistic scenarios with well-defined expected findings.

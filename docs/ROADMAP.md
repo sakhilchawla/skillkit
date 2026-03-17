@@ -9,6 +9,7 @@
 | v0.3.0 | 2026-03-16 | `v0.3.0` | Benchmarks package (precision/recall/F1 scorer, A/B comparator, regression tracker, 3 reporters) |
 | v0.4.0 | 2026-03-16 | `v0.4.0` | Adapters package (stack detector, convention detector, template engine, 3 built-in templates) |
 | v0.4.1 | 2026-03-16 | — | Bug fix: monorepo support for stack/convention detection, `{{else}}` in template engine |
+| v0.5.0 | 2026-03-17 | `v0.5.0` | Real skill execution (subprocess invocation, provider flags), working bench CLI (YAML config, --compare, --save, --baseline, --format) |
 
 ## Current State — What Actually Works
 
@@ -17,32 +18,33 @@
 | `skillkit lint` | **Production-ready** | Tested against 17 real skills, found real issues |
 | `skillkit init` | **Production-ready** | Simple scaffolding, works as expected |
 | `skillkit test` (mock) | **Working** | Validates test structure, runs assertions against SKILL.md body as simulated output |
-| `skillkit test` (real) | **Not implemented** | Needs subprocess skill invocation — see v1.0 below |
-| `skillkit bench` CLI | **Help only** | Package API works (scorer, comparator, tracker all tested), CLI just shows usage |
-| `skillkit bench` API | **Working** | Math is correct (28 tests), needs real skill output to be useful |
+| `skillkit test` (real) | **Working** | Supports --real --provider --command --timeout flags for subprocess skill invocation |
+| `skillkit bench` CLI | **Working** | Loads YAML config, runs benchmarks, supports --compare, --save, --baseline, --format |
+| `skillkit bench` API | **Working** | Math is correct (28 tests), CLI integration complete |
 | `skillkit adapt` | **Working** | Tested against real monorepo (microfrontends), correctly detects TS/Next/Tailwind/Vitest/Zustand |
 
 ## What's Next
 
-### v0.5 — Real Skill Execution (the hard one)
+### v0.5 — Real Skill Execution (shipped)
 
 **Goal:** `skillkit test` and `skillkit bench` work against actual AI model output, not simulated.
 
-| Task | Complexity | Description |
-|------|-----------|-------------|
-| Subprocess skill invocation | Hard | Invoke skills via `claude --skill <name>` or equivalent subprocess call. Handle timeouts, stderr, exit codes. |
-| API key management | Medium | Read from env vars (`ANTHROPIC_API_KEY`), support multiple providers |
-| Output capture | Medium | Capture full skill output (stdout) for assertion evaluation |
-| Fixture lifecycle | Medium | Clone fixture repos to temp dirs, apply setup modifications, clean up after |
-| Built-in fixtures | Medium | Ship 3 sample repos: React/Next.js app, Python/FastAPI API, Go service |
-| Real mode for bench | Medium | Wire scorer to real invocations, run against ground truth corpus |
-| Rate limiting | Easy | Respect API rate limits when running multiple scenarios |
+| Task | Complexity | Status |
+|------|-----------|--------|
+| Subprocess skill invocation | Hard | **Done** — `--real --provider --command --timeout` flags on `skillkit test` |
+| API key management | Medium | **Done** — reads from env vars, provider-aware |
+| Output capture | Medium | **Done** — captures full skill output for assertion evaluation |
+| Fixture lifecycle | Medium | **Done** — fixture manager clones to temp dirs, applies setup, cleans up |
+| Built-in fixtures | Medium | Planned for v0.6 |
+| Real mode for bench | Medium | **Done** — `skillkit bench` CLI loads YAML, runs benchmarks, scores output |
+| Rate limiting | Easy | Planned for v0.6 |
 
-**Why this is hard:** Every AI coding tool has a different invocation mechanism. Claude Code uses `claude`, Codex uses `codex`, Cursor has no CLI. We need an abstraction layer.
+**Approach (implemented):**
+```bash
+# Via CLI flags
+skillkit test examples/ --real --provider claude-code --timeout 120000
 
-**Possible approach:**
-```
-# skillkit.config.yaml
+# Or in skillkit.config.yaml
 test:
   provider: claude-code    # or: codex, gemini-cli, custom
   command: "claude"        # override: custom command to invoke
@@ -137,13 +139,13 @@ test:
 
 ## Metrics
 
-### Current (v0.4.1)
+### Current (v0.5.0)
 
 | Metric | Value |
 |--------|-------|
 | Packages | 6 |
-| Tests | 175 |
-| Test execution time | ~320ms |
+| Tests | 195+ |
+| Test execution time | ~350ms |
 | Lint rules | 15 |
 | Assertion types | 8 |
 | Built-in templates | 3 |

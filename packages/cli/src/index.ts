@@ -7,7 +7,7 @@ import { initCommand } from './commands/init.js';
 import { adaptCommand } from './commands/adapt.js';
 import { benchCommand } from './commands/bench.js';
 
-const VERSION = '0.4.0';
+const VERSION = '0.5.0';
 
 const HELP = `${LOGO}
 ${bold('Usage:')} skillkit <command> [options]
@@ -15,7 +15,7 @@ ${bold('Usage:')} skillkit <command> [options]
 ${bold('Commands:')}
   ${cyan('lint')} [path]              Lint SKILL.md files against spec and best practices
   ${cyan('test')} [path]              Run skill test definitions
-  ${cyan('bench')} <config>           Benchmark skill quality (precision/recall/F1)
+  ${cyan('bench')} <config.yaml>       Benchmark skill quality (precision/recall/F1)
   ${cyan('init')} <name>              Scaffold a new skill
   ${cyan('adapt')} <template> [repo]  Generate project-adapted skills
 
@@ -28,7 +28,9 @@ ${bold('Examples:')}
   skillkit lint ~/.claude/skills      Lint global skills
   skillkit init review                Create a new review skill
   skillkit test examples/             Run tests in examples directory
-  skillkit bench review-bench.yaml   Benchmark a skill's quality
+  skillkit bench review-bench.yaml    Benchmark a skill's quality
+  skillkit bench config.yaml --real   Benchmark with real AI invocation
+  skillkit bench config.yaml --save b.json  Save results as baseline
   skillkit adapt component             Generate a /create-component skill for your project
 
 ${dim('Documentation: https://github.com/skillkit/skillkit')}

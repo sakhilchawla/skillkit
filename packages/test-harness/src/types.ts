@@ -1,3 +1,5 @@
+import type { InvokerConfig } from './invoker/types.js';
+
 /**
  * A test fixture pointing to a cloneable or local repository.
  */

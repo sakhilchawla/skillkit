@@ -51,8 +51,8 @@ Rules are standalone modules. Adding a new rule = create one file + register in 
 
 Three presets: `strict` (all rules at default), `recommended` (balanced), `minimal` (spec only).
 
-### @skillkit/test-harness (v0.2 -- shipped)
-YAML-based test definitions for skills. In mock mode, reads the SKILL.md body and evaluates assertions against it. Supports 8 assertion types.
+### @skillkit/test-harness (v0.2 shipped, v0.5 real mode)
+YAML-based test definitions for skills. Supports mock mode (SKILL.md body) and real mode (subprocess invocation). 8 assertion types.
 
 Key concepts:
 - **Test Definition**: YAML file listing scenarios for a skill
@@ -60,10 +60,12 @@ Key concepts:
 - **Fixture**: A sample repository to run the skill against (used in real mode)
 - **Assertion**: Matcher functions (contains, notContains, matchesPattern, severity, completes, noErrors, noCriticalIssues, maxTokens)
 - **Mock mode**: Uses SKILL.md body as simulated output (fast, free, no API key)
-- **Real mode**: Planned for v0.3 (invokes actual AI model)
+- **Real mode**: Invokes actual AI model via subprocess. Supports `--provider`, `--command`, `--timeout` flags.
+- **Invoker**: Subprocess abstraction that spawns the configured provider CLI, captures stdout, handles timeouts and exit codes. Supports claude-code, codex, gemini-cli, and custom commands.
+- **Fixture Manager**: Clones fixture directories to temp dirs, applies setup modifications (injectFile, removeFile), and cleans up after each scenario.
 
-### @skillkit/benchmarks (v0.3 -- shipped)
-Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions. Package at `packages/benchmarks/`.
+### @skillkit/benchmarks (v0.3 API shipped, v0.5 CLI shipped)
+Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions. Package at `packages/benchmarks/`. CLI fully wired in v0.5 with YAML config loading, --compare, --save, --baseline, --format flags.
 
 ### @skillkit/adapters (v0.4 -- current)
 Repo scanning and project-adapted skill generation. Detects your tech stack and conventions, then renders parameterized templates into project-specific skills.
@@ -147,7 +149,7 @@ export const myRule: LintRule = {
 
 ## Test Infrastructure
 
-175+ unit tests using vitest, organized by package:
+195+ unit tests using vitest, organized by package:
 
 ```
 packages/core/src/__tests__/
@@ -185,7 +187,8 @@ CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `v
 | v0.1 | Foundation | Parser, linter (15 rules), CLI, init, CI | Shipped |
 | v0.2 | Testing | YAML test harness, mock mode, 8 assertion types | Shipped |
 | v0.3 | Quality | Benchmarking, scoring, regression tracking | Shipped |
-| v0.4 | Generation | Repo scanning, stack detection, adaptive skill generation | **Current** |
+| v0.4 | Generation | Repo scanning, stack detection, adaptive skill generation | Shipped |
+| v0.5 | Real Execution | Subprocess invocation, provider flags, working bench CLI, fixture manager | **Current** |
 | v1.0 | Ecosystem | Plugin API, CI/CD, cross-tool testing | Planned |
 
 ## Competitive Positioning

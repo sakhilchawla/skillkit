@@ -135,6 +135,25 @@ $ skillkit test examples/
   PASS 13 passed, 13 total (9ms)
 ```
 
+**Real mode** — invoke the actual AI model for each scenario:
+
+```bash
+# Run tests with real AI invocation via Claude Code
+npx skillkit test examples/ --real --provider claude-code
+
+# Use a custom command and timeout
+npx skillkit test examples/ --real --provider codex --command codex --timeout 180000
+```
+
+Flags for `skillkit test`:
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--real` | off (mock mode) | Invoke actual AI model instead of using SKILL.md body |
+| `--provider <name>` | `claude-code` | Provider to use for real invocation |
+| `--command <cmd>` | auto-detected | Custom command override for subprocess |
+| `--timeout <ms>` | `120000` | Per-scenario timeout in milliseconds |
+
 **8 assertion types:**
 
 | Assertion | What it checks |
@@ -161,6 +180,27 @@ Define a ground truth (known issues in a test repo), run your skill, get scores:
 Plus **A/B comparison** (skill v1 vs v2 on same inputs) and **regression tracking** (did this prompt edit make quality drop?).
 
 Three output formats: colored console, JSON for CI, markdown for PR comments.
+
+**CLI is fully working in v0.5:**
+
+```bash
+# Run a benchmark from YAML config
+skillkit bench review-bench.yaml
+
+# Run with real AI invocation
+skillkit bench review-bench.yaml --real
+
+# A/B compare two skills
+skillkit bench review-bench.yaml --compare ./v2/SKILL.md
+
+# Save results as baseline, check for regression
+skillkit bench review-bench.yaml --save baseline.json
+skillkit bench review-bench.yaml --baseline baseline.json
+
+# Output as JSON or markdown
+skillkit bench review-bench.yaml --format json
+skillkit bench review-bench.yaml --format markdown
+```
 
 ### 4. `skillkit adapt` — Generate skills for YOUR project
 
@@ -303,7 +343,7 @@ Claude Code · Codex CLI · Gemini CLI · Cursor · VS Code · GitHub Copilot ·
 | v0.2 | `test` with YAML scenarios, mock mode, 8 assertion types | Shipped |
 | v0.3 | `bench` with quality scoring and regression tracking | Shipped |
 | v0.4 | `adapt` with repo scanning, stack detection, skill generation | Shipped |
-| v0.5 | Real skill execution (subprocess invocation, fixture repos) | Next |
+| v0.5 | Real skill execution (subprocess invocation, fixture repos), working bench CLI | Shipped |
 | v0.6 | Plugin API for custom rules, scenarios, templates | Planned |
 | v0.7 | npm publish (`npm install -g skillkit`) | Planned |
 | v0.8 | CI/CD integration (GitHub Actions, pre-commit hooks) | Planned |
@@ -338,7 +378,7 @@ cd skillkit
 npm install
 
 npm run build          # TypeScript build
-npm test               # 175 unit tests (~320ms)
+npm test               # 195+ unit tests (~350ms)
 npm run test:watch     # Watch mode
 npm run test:coverage  # Coverage report
 npm run lint:self      # Lint the reference skills
