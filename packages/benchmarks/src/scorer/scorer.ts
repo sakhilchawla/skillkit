@@ -15,11 +15,49 @@ const FINDING_PATTERNS = [
   /\bfinding:/i,
 ];
 
+/** Words too common to be useful as keywords */
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'in', 'on', 'at', 'to', 'for', 'of', 'is', 'it',
+  'and', 'or', 'not', 'with', 'from', 'by', 'as', 'be', 'was', 'are',
+  'this', 'that', 'has', 'have', 'had', 'but', 'if', 'no', 'can',
+  'should', 'could', 'would', 'may', 'might', 'will', 'do', 'does',
+  'did', 'been', 'being', 'into', 'than', 'its', 'also', 'more',
+  'found', 'detected', 'issue', 'problem', 'error', 'warning',
+]);
+
+/**
+ * Extract significant keywords from a description string.
+ * Filters out stop words and very short words.
+ */
+function extractKeywords(description: string): string[] {
+  return description
+    .toLowerCase()
+    .split(/[\s\-_/.,;:!?()\[\]{}'"]+/)
+    .filter((w) => w.length >= 3 && !STOP_WORDS.has(w));
+}
+
+/**
+ * Check if enough keywords from a list appear in the output.
+ * Requires at least 60% of keywords to match, minimum 1.
+ */
+function keywordsMatch(output: string, keywords: string[]): boolean {
+  if (keywords.length === 0) return false;
+
+  const lower = output.toLowerCase();
+  const matched = keywords.filter((kw) => lower.includes(kw));
+  const threshold = Math.max(1, Math.ceil(keywords.length * 0.6));
+
+  return matched.length >= threshold;
+}
+
 /**
  * Check whether a single expected finding was detected in the output.
  *
- * A finding is considered detected if the output contains the description
- * OR contains both the file name and the finding type.
+ * Detection priority:
+ * 1. Regex pattern match (if `finding.pattern` is set)
+ * 2. Exact description substring match
+ * 3. File name + type match
+ * 4. Keyword match (explicit `finding.keywords` or auto-extracted from description)
  *
  * @param output - The skill output to search
  * @param finding - The expected finding to look for
@@ -28,17 +66,34 @@ const FINDING_PATTERNS = [
 function isFindingDetected(output: string, finding: ExpectedFinding): boolean {
   const lower = output.toLowerCase();
 
-  // Check if output contains the description
+  // 1. Regex pattern match (highest priority, opt-in)
+  if (finding.pattern) {
+    const regex = new RegExp(finding.pattern, 'i');
+    if (regex.test(output)) {
+      return true;
+    }
+  }
+
+  // 2. Exact description substring match
   if (lower.includes(finding.description.toLowerCase())) {
     return true;
   }
 
-  // Check if output contains both the file name and the type
+  // 3. File name + type match
   if (
     lower.includes(finding.file.toLowerCase()) &&
     lower.includes(finding.type.toLowerCase())
   ) {
     return true;
+  }
+
+  // 4. Keyword match — explicit keywords or auto-extracted from description
+  const keywords = finding.keywords ?? extractKeywords(finding.description);
+  if (keywords.length > 0 && keywordsMatch(output, keywords)) {
+    // Also require the file name to appear to avoid false matches
+    if (lower.includes(finding.file.toLowerCase())) {
+      return true;
+    }
   }
 
   return false;
@@ -77,11 +132,33 @@ function countFalsePositives(
           return false;
         }
         const lower = line.toLowerCase();
-        return (
+
+        // Pattern match
+        if (finding.pattern) {
+          const regex = new RegExp(finding.pattern, 'i');
+          if (regex.test(line)) return true;
+        }
+
+        // Description or file+type match
+        if (
           lower.includes(finding.description.toLowerCase()) ||
           (lower.includes(finding.file.toLowerCase()) &&
             lower.includes(finding.type.toLowerCase()))
-        );
+        ) {
+          return true;
+        }
+
+        // Keyword match with file presence
+        const keywords = finding.keywords ?? extractKeywords(finding.description);
+        if (
+          keywords.length > 0 &&
+          keywordsMatch(line, keywords) &&
+          lower.includes(finding.file.toLowerCase())
+        ) {
+          return true;
+        }
+
+        return false;
       },
     );
 
@@ -112,8 +189,12 @@ function estimateTokenCount(output: string): number {
  * Score skill output against ground truth.
  *
  * Calculates precision, recall, and F1 by matching expected findings
- * against the output text and counting false positives from unmatched
- * finding-like lines.
+ * against the output text. Supports three matching strategies:
+ *
+ * 1. **Regex pattern** — set `finding.pattern` for full control
+ * 2. **Keyword matching** — auto-extracts significant words from the description
+ *    and checks if 60%+ appear in the output near the file name
+ * 3. **Exact matching** — substring match on description or file+type
  *
  * @param output - The captured skill output
  * @param groundTruth - The ground truth with expected findings and clean files
@@ -123,10 +204,16 @@ function estimateTokenCount(output: string): number {
  * @example
  * ```ts
  * const scores = scoreOutput(skillOutput, {
- *   expectedFindings: [{ file: 'app.ts', type: 'security', description: 'SQL injection' }],
+ *   expectedFindings: [
+ *     // Keyword matching (default) — works even if Claude rephrases
+ *     { file: 'app.ts', type: 'security', description: 'SQL injection vulnerability in query builder' },
+ *     // Regex pattern — full control over matching
+ *     { file: 'auth.ts', type: 'security', description: 'Weak password hashing', pattern: 'password.*(hash|bcrypt|md5|sha1)' },
+ *     // Explicit keywords — override auto-extraction
+ *     { file: 'api.ts', type: 'security', description: 'API key exposure', keywords: ['api', 'key', 'exposed', 'hardcoded'] },
+ *   ],
  *   cleanFiles: ['utils.ts'],
  * });
- * console.log(scores.f1); // 0.0 to 1.0
  * ```
  */
 export function scoreOutput(

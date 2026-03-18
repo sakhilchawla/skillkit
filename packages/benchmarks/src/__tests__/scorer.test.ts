@@ -217,4 +217,155 @@ issue: broken logic
     expect(scores.falsePositives).toBe(5);
     expect(scores.precision).toBe(0); // TP=0, FP=5 -> precision = 0/5 = 0
   });
+
+  // ---------------------------------------------------------------------------
+  // Keyword matching (auto-extracted from description)
+  // ---------------------------------------------------------------------------
+  describe('keyword matching', () => {
+    it('detects finding when Claude rephrases the description', () => {
+      const groundTruth = makeGroundTruth([
+        { file: 'auth.ts', type: 'security', description: 'SQL injection vulnerability in query builder' },
+      ]);
+
+      // Claude's output uses different wording but same concepts
+      const output = `
+In auth.ts, the query builder constructs SQL queries using string concatenation,
+which creates a serious injection risk. User input is not parameterized.
+      `.trim();
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(1);
+      expect(scores.recall).toBe(1.0);
+    });
+
+    it('detects finding with partial keyword overlap (60% threshold)', () => {
+      const groundTruth = makeGroundTruth([
+        { file: 'api.ts', type: 'security', description: 'hardcoded database credentials in connection string' },
+      ]);
+
+      // Contains "hardcoded", "database", "credentials" (3/5 = 60%) + file name
+      const output = 'The file api.ts has hardcoded database credentials that should use env vars.';
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(1);
+    });
+
+    it('requires file name presence for keyword match', () => {
+      const groundTruth = makeGroundTruth([
+        { file: 'secret.ts', type: 'security', description: 'hardcoded API key exposed' },
+      ]);
+
+      // Keywords match but file name is absent
+      const output = 'Found a hardcoded API key that is exposed in the codebase.';
+
+      const scores = scoreOutput(output, groundTruth);
+      // Should NOT match — file name not present
+      expect(scores.truePositives).toBe(0);
+    });
+
+    it('does not match when too few keywords overlap', () => {
+      const groundTruth = makeGroundTruth([
+        { file: 'db.ts', type: 'performance', description: 'N+1 query causing excessive database round trips' },
+      ]);
+
+      // Only "database" matches (1/6 keywords < 60%), file present
+      const output = 'db.ts has a database connection pool configured correctly.';
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(0);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Regex pattern matching
+  // ---------------------------------------------------------------------------
+  describe('pattern matching', () => {
+    it('detects finding via regex pattern', () => {
+      const groundTruth = makeGroundTruth([
+        {
+          file: 'auth.ts',
+          type: 'security',
+          description: 'Weak password hashing algorithm',
+          pattern: 'password.*(md5|sha1|plain|weak|hash)',
+        },
+      ]);
+
+      const output = 'auth.ts uses md5 for password storage which is cryptographically weak.';
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(1);
+      expect(scores.recall).toBe(1.0);
+    });
+
+    it('pattern match is case-insensitive', () => {
+      const groundTruth = makeGroundTruth([
+        {
+          file: 'config.ts',
+          type: 'security',
+          description: 'Exposed API key',
+          pattern: 'API[_\\s-]?KEY.*exposed|exposed.*API[_\\s-]?KEY',
+        },
+      ]);
+
+      const output = 'config.ts has an api_key that is exposed in the repository.';
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(1);
+    });
+
+    it('falls back to keyword matching when pattern does not match', () => {
+      const groundTruth = makeGroundTruth([
+        {
+          file: 'app.ts',
+          type: 'security',
+          description: 'SQL injection vulnerability',
+          pattern: 'VERY_SPECIFIC_PATTERN_THAT_WONT_MATCH',
+        },
+      ]);
+
+      // Pattern won't match, but exact description substring does
+      const output = 'app.ts has a SQL injection vulnerability in the login form.';
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(1);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Explicit keywords
+  // ---------------------------------------------------------------------------
+  describe('explicit keywords', () => {
+    it('uses explicit keywords when provided', () => {
+      const groundTruth = makeGroundTruth([
+        {
+          file: 'handler.ts',
+          type: 'security',
+          description: 'SSRF via user-controlled URL',
+          keywords: ['ssrf', 'url', 'fetch', 'request'],
+        },
+      ]);
+
+      // Contains "url", "fetch", "request" (3/4 = 75% > 60%) + file name
+      const output = 'handler.ts makes a fetch request to a user-controlled url without validation.';
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(1);
+    });
+
+    it('explicit keywords override auto-extraction', () => {
+      const groundTruth = makeGroundTruth([
+        {
+          file: 'db.ts',
+          type: 'performance',
+          description: 'Something very generic that would not match',
+          keywords: ['n+1', 'query', 'loop'],
+        },
+      ]);
+
+      const output = 'db.ts has an n+1 query problem inside the loop.';
+
+      const scores = scoreOutput(output, groundTruth);
+      expect(scores.truePositives).toBe(1);
+    });
+  });
 });
