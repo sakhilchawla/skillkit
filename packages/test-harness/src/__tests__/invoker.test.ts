@@ -7,25 +7,25 @@ describe('resolveCommand', () => {
   it('resolves claude-code provider to correct command', () => {
     const config: InvokerConfig = { provider: 'claude-code' };
     const result = resolveCommand(config);
-    expect(result).toEqual(['claude', '--print', '--skill']);
+    expect(result).toEqual(['claude', '-p']);
   });
 
   it('resolves codex provider to correct command', () => {
     const config: InvokerConfig = { provider: 'codex' };
     const result = resolveCommand(config);
-    expect(result).toEqual(['codex', '--skill']);
+    expect(result).toEqual(['codex', '--quiet', '--prompt']);
   });
 
   it('resolves gemini-cli provider to correct command', () => {
     const config: InvokerConfig = { provider: 'gemini-cli' };
     const result = resolveCommand(config);
-    expect(result).toEqual(['gemini', '--skill']);
+    expect(result).toEqual(['gemini', '--prompt']);
   });
 
   it('appends extra args to provider command', () => {
     const config: InvokerConfig = { provider: 'claude-code', args: ['--verbose'] };
     const result = resolveCommand(config);
-    expect(result).toEqual(['claude', '--print', '--skill', '--verbose']);
+    expect(result).toEqual(['claude', '-p', '--verbose']);
   });
 
   it('uses custom command when specified', () => {
