@@ -26,6 +26,22 @@ export interface BenchmarkConfig {
   runs?: number;
   /** Optional: path to second skill for A/B comparison */
   compareWith?: string;
+  /** Path to test corpus directory (repo with planted bugs) for real mode */
+  corpus?: string;
+  /** Invoke command for the skill (e.g., "/review main") */
+  invoke?: string;
+}
+
+/** Options controlling how a benchmark is executed */
+export interface BenchmarkRunOptions {
+  /** If true, run in mock mode (read SKILL.md body as output). Default: true */
+  mock?: boolean;
+  /** Invoker configuration for real mode */
+  invoker?: {
+    provider: string;
+    command?: string;
+    timeout?: number;
+  };
 }
 
 /** Scores for a single benchmark run */

@@ -20,8 +20,13 @@ The Agent Skills open standard (agentskills.io) is adopted by 27+ AI coding tool
 │ @skillkit/ @skillkit/      @skillkit/  @skillkit/    │
 │  linter    test-harness    benchmarks   adapters     │
 │     │        │                   │          │        │
-├─────┼────────┼───────────────────┼──────────┼────────┤
-│     └────────┴───────────────────┴──────────┘        │
+│     │        │              ┌────┘          │        │
+│     │        │              │ depends on    │        │
+│     │        │              ▼               │        │
+│     │        │         test-harness         │        │
+│     │        │         (subprocess)         │        │
+├─────┼────────┼──────────────┼───────────────┼────────┤
+│     └────────┴──────────────┴───────────────┘        │
 │                  @skillkit/core                       │
 │             (parser, types, spec)                     │
 └──────────────────────────────────────────────────────┘
@@ -49,7 +54,7 @@ Validates SKILL.md files against rules organized in 4 categories:
 
 Rules are standalone modules. Adding a new rule = create one file + register in index.
 
-Three presets: `strict` (all rules at default), `recommended` (balanced), `minimal` (spec only).
+20 rules across 4 presets: `strict` (all rules at default), `recommended` (balanced), `minimal` (spec only), `research` (research-focused skills).
 
 ### @skillkit/test-harness (v0.2 shipped, v0.5 real mode)
 YAML-based test definitions for skills. Supports mock mode (SKILL.md body) and real mode (subprocess invocation). 8 assertion types.
@@ -64,8 +69,8 @@ Key concepts:
 - **Invoker**: Subprocess abstraction that spawns the configured provider CLI, captures stdout, handles timeouts and exit codes. Supports claude-code, codex, gemini-cli, and custom commands.
 - **Fixture Manager**: Clones fixture directories to temp dirs, applies setup modifications (injectFile, removeFile), and cleans up after each scenario.
 
-### @skillkit/benchmarks (v0.3 API shipped, v0.5 CLI shipped)
-Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions. Package at `packages/benchmarks/`. CLI fully wired in v0.5 with YAML config loading, --compare, --save, --baseline, --format flags.
+### @skillkit/benchmarks (v0.3 API shipped, v0.5 CLI shipped, v0.5.1 real mode)
+Quality scoring: run skills against known-good and known-bad inputs, measure precision/recall/F1, track regressions. Package at `packages/benchmarks/`. CLI fully wired in v0.5 with YAML config loading, --compare, --save, --baseline, --format flags. In v0.5.1, supports real benchmark execution via `--real --provider claude-code --timeout 120000` flags. Depends on @skillkit/test-harness for subprocess invocation. New config fields: `corpus` (path to test repo with planted bugs) and `invoke` (skill invocation command).
 
 ### @skillkit/adapters (v0.4 -- current)
 Repo scanning and project-adapted skill generation. Detects your tech stack and conventions, then renders parameterized templates into project-specific skills.
@@ -131,6 +136,20 @@ scenarios:
       - contains: "security"
 ```
 
+## Benchmark Config Format
+
+```yaml
+name: review-skill-bench
+skill: ./SKILL.md
+corpus: ./fixtures/planted-bugs    # path to test repo with planted bugs
+invoke: "/review main"             # skill invocation command
+scenarios:
+  - name: catches XSS
+    expected:
+      - contains: "CRITICAL"
+      - contains: "security"
+```
+
 ## Lint Rule Structure
 
 Each rule is a TypeScript module implementing the LintRule interface:
@@ -149,7 +168,7 @@ export const myRule: LintRule = {
 
 ## Test Infrastructure
 
-195+ unit tests using vitest, organized by package:
+247+ unit tests (16 test files) using vitest, organized by package:
 
 ```
 packages/core/src/__tests__/
@@ -188,7 +207,8 @@ CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `v
 | v0.2 | Testing | YAML test harness, mock mode, 8 assertion types | Shipped |
 | v0.3 | Quality | Benchmarking, scoring, regression tracking | Shipped |
 | v0.4 | Generation | Repo scanning, stack detection, adaptive skill generation | Shipped |
-| v0.5 | Real Execution | Subprocess invocation, provider flags, working bench CLI, fixture manager | **Current** |
+| v0.5 | Real Execution | Subprocess invocation, provider flags, working bench CLI, fixture manager | Shipped |
+| v0.5.1 | Real Benchmarks | Real benchmark execution (--real flag), research lint preset, 20 rules, 4 presets | **Current** |
 | v1.0 | Ecosystem | Plugin API, CI/CD, cross-tool testing | Planned |
 
 ## Competitive Positioning
@@ -196,7 +216,7 @@ CI pipeline (GitHub Actions): `tsc --build` → `skillkit lint examples/` → `v
 | Feature | skillkit | anthropics/skills | superpowers | gstack |
 |---------|---------|-------------------|-------------|--------|
 | Skill library | Examples only | 17 skills | 13 skills | 8 skills |
-| Linting | 15 rules, 3 presets | — | — | — |
+| Linting | 20 rules, 4 presets | — | — | — |
 | Testing | YAML scenarios | — | — | — |
 | Benchmarking | Quality scoring | — | — | — |
 | Adaptive generation | Repo-aware | — | — | — |

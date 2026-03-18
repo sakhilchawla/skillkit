@@ -26,11 +26,11 @@ npm run clean          # Clean all build artifacts
 npm run build && npm test && npm run lint:self
 ```
 
-You should see: build passes, 195+ tests pass, 6 reference skills lint clean.
+You should see: build passes, 247+ tests pass, 6 reference skills lint clean.
 
 ## Test Infrastructure
 
-Tests use [vitest](https://vitest.dev/) and live next to the source code. Currently 195+ tests across 13+ test files:
+Tests use [vitest](https://vitest.dev/) and live next to the source code. Currently 247+ tests across 16 test files:
 
 ```
 packages/core/src/__tests__/
@@ -38,7 +38,7 @@ packages/core/src/__tests__/
   agentSkillsSpec.test.ts  # 8 tests — spec validation utilities
 
 packages/linter/src/__tests__/
-  rules.test.ts            # 49 tests — all 15 lint rules
+  rules.test.ts            # 49+ tests — all 20 lint rules
   engine.test.ts           # 8 tests — lint engine + presets
 
 packages/test-harness/src/__tests__/
@@ -79,7 +79,7 @@ export const myRule: LintRule = {
 ```
 
 2. Register in `packages/linter/src/rules/index.ts` — import and add to `allRules` array
-3. Add to appropriate preset(s) in `packages/linter/src/presets/`
+3. Add to appropriate preset(s) in `packages/linter/src/presets/` (4 presets: strict, recommended, minimal, research)
 4. Write tests in `packages/linter/src/__tests__/rules.test.ts` — add a `describe` block
 5. Verify: `npm test && npm run lint:self`
 

@@ -1,6 +1,6 @@
 # Benchmarking Skills with `skillkit bench`
 
-> **Status: Fully working in v0.5.** The benchmarking package and CLI are both operational. The CLI loads YAML configs, runs benchmarks (mock or real), supports A/B comparison, baseline regression tracking, and multiple output formats.
+> **Status: Fully working in v0.5.1.** The benchmarking package and CLI are both operational. The CLI loads YAML configs, runs benchmarks (mock or real), supports A/B comparison, baseline regression tracking, and multiple output formats. Real mode now invokes skills via AI providers (claude-code, codex, gemini-cli) and scores the output against ground truth.
 
 ## What It Does
 
@@ -222,6 +222,90 @@ skillkit bench review.bench.yaml --format markdown
 # Run and save results for future regression comparison
 skillkit bench review.bench.yaml --save-baseline
 ```
+
+## Mock Mode vs Real Mode
+
+### Mock mode (default)
+
+```bash
+skillkit bench review.bench.yaml
+```
+
+In mock mode, the bench runner reads the SKILL.md body as simulated output and scores it against the ground truth. This is fast (milliseconds), free (no API calls), and useful for iterating on your benchmark configuration and ground truth definitions before spending tokens on real runs.
+
+Mock mode validates that your config parses correctly, scenarios are well-formed, and ground truth files exist. Use it for fast iteration during benchmark development.
+
+### Real mode
+
+```bash
+skillkit bench review.bench.yaml --real --provider claude-code
+```
+
+In real mode, the bench runner invokes the actual AI model for each scenario. It spawns the provider CLI as a subprocess, passes in the skill instructions and the invoke command, captures the model's output, and scores it against the ground truth.
+
+Real mode gives you actual quality scores -- precision, recall, and F1 measured against real AI output, not simulated text.
+
+#### Running in real mode
+
+```bash
+# Real mode with default provider (claude-code)
+skillkit bench review.bench.yaml --real
+
+# Real mode with a specific provider
+skillkit bench review.bench.yaml --real --provider codex
+
+# Real mode with a custom timeout (3 minutes per scenario)
+skillkit bench review.bench.yaml --real --provider claude-code --timeout 180000
+```
+
+#### Available providers
+
+| Provider | CLI Command | Notes |
+|----------|-------------|-------|
+| `claude-code` | `claude` | Default. Anthropic's Claude Code CLI |
+| `codex` | `codex` | OpenAI Codex CLI |
+| `gemini-cli` | `gemini` | Google Gemini CLI |
+
+#### Real mode config with corpus
+
+When using real mode, the `corpus` field points to a test repository with planted bugs. The `invoke` field specifies how the skill is invoked:
+
+```yaml
+name: review benchmark (real)
+skill: ./review/SKILL.md
+runs: 3
+corpus: ./benchmarks/review-corpus/
+invoke: "/review main"
+
+thresholds:
+  f1: 0.70
+  precision: 0.60
+  recall: 0.60
+
+scenarios:
+  - name: XSS vulnerability
+    fixture: ./benchmarks/review-corpus/xss-vulnerability/
+    invoke: "/review main"
+    ground-truth: ./benchmarks/review-corpus/xss-vulnerability/ground-truth.yaml
+
+  - name: SQL injection
+    fixture: ./benchmarks/review-corpus/sql-injection/
+    invoke: "/review main"
+    ground-truth: ./benchmarks/review-corpus/sql-injection/ground-truth.yaml
+```
+
+The `corpus` field is the path to the root of your test repository. Each scenario's `fixture` points to a subdirectory within the corpus. The `invoke` field at the top level sets the default invocation command, which individual scenarios can override.
+
+#### When to use each mode
+
+| Situation | Mode |
+|-----------|------|
+| Developing benchmark config and ground truth | Mock |
+| CI/CD on every push (fast, free) | Mock |
+| Measuring actual skill quality | Real |
+| After editing a skill's prompt | Real |
+| Before publishing a skill | Real |
+| Comparing providers (claude-code vs codex) | Real |
 
 ### Full Config in `skillkit.config.yaml`
 
@@ -732,6 +816,8 @@ skillkit bench <config.yaml> [options]
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--real` | off (mock mode) | Run in real mode (invoke actual AI model) |
+| `--provider <name>` | `claude-code` | Which AI provider to use in real mode: `claude-code`, `codex`, `gemini-cli` |
+| `--timeout <ms>` | `120000` | Per-scenario timeout in milliseconds (real mode) |
 | `--compare <skill>` | — | A/B compare against another skill SKILL.md |
 | `--save <file>` | — | Save results as baseline JSON for future regression checks |
 | `--baseline <file>` | — | Load baseline and check for regression |
@@ -744,6 +830,12 @@ skillkit bench <config.yaml> [options]
 name: review benchmark
 skill: ./review/SKILL.md
 runs: 3
+
+# Path to a test repo with planted bugs (used for real mode)
+corpus: ./benchmarks/review-corpus/
+
+# Default skill invocation command (can be overridden per scenario)
+invoke: "/review main"
 
 groundTruth:
   expectedFindings:
@@ -764,14 +856,30 @@ scenarios:
     ground-truth: ./benchmarks/xss-app/ground-truth.yaml
 ```
 
+| Field | Required | Description |
+|-------|----------|-------------|
+| `name` | Yes | Human-readable benchmark name |
+| `skill` | Yes | Path to the SKILL.md being benchmarked |
+| `runs` | No | Number of runs per scenario (default: 1) |
+| `corpus` | No | Path to a test repo with planted bugs for real mode |
+| `invoke` | No | Default skill invocation command (e.g., `"/review main"`) |
+| `thresholds` | No | Quality thresholds for pass/fail |
+| `scenarios` | Yes | List of benchmark scenarios |
+
 ### Examples
 
 ```bash
-# Basic benchmark run (mock mode)
+# Basic benchmark run (mock mode — fast, free, no API key needed)
 skillkit bench review-bench.yaml
 
-# Real mode — invoke actual AI model
+# Real mode — invoke actual AI model (default provider: claude-code)
 skillkit bench review-bench.yaml --real
+
+# Real mode with a specific provider
+skillkit bench review-bench.yaml --real --provider codex
+
+# Real mode with a custom timeout (3 minutes per scenario)
+skillkit bench review-bench.yaml --real --provider claude-code --timeout 180000
 
 # A/B comparison between two skills
 skillkit bench review-bench.yaml --compare ./v2/SKILL.md
@@ -792,7 +900,7 @@ skillkit bench review-bench.yaml --format markdown
 skillkit bench review-bench.yaml --runs 5
 ```
 
-### Example Output
+### Example Output (mock mode)
 
 ```
 $ skillkit bench review-bench.yaml
@@ -813,9 +921,53 @@ $ skillkit bench review-bench.yaml
   PASS  Quality above threshold (F1 >= 70%)
 ```
 
+### Example Output (real mode)
+
+```
+$ skillkit bench review-bench.yaml --real --provider claude-code --timeout 120000
+
+  review skill benchmark
+  Skill: ./review/SKILL.md
+  Runs: 3
+  Mode: real
+  Provider: claude-code
+  Timeout: 120000ms
+
+  [1/3] XSS vulnerability
+        Invoking: /review main (claude-code)
+        Run 1: 2 findings (2 correct, 0 false) — 4230ms
+        Run 2: 3 findings (2 correct, 1 false) — 3810ms
+        Run 3: 2 findings (2 correct, 0 false) — 5120ms
+        → Averaged: precision 85.7%, recall 100%
+
+  [2/3] SQL injection
+        Invoking: /review main (claude-code)
+        Run 1: 3 findings (2 correct, 1 false) — 5640ms
+        Run 2: 2 findings (2 correct, 0 false) — 4920ms
+        Run 3: 3 findings (2 correct, 1 false) — 6100ms
+        → Averaged: precision 75.0%, recall 66.7%
+
+  [3/3] Clean code (no issues)
+        Invoking: /review main (claude-code)
+        Run 1: 0 findings — 3200ms
+        Run 2: 0 findings — 2890ms
+        Run 3: 1 finding (0 correct, 1 false) — 3450ms
+        → Averaged: precision 100%, recall 100% (1 FP in 3 runs)
+
+  ────────────────────────────────
+  Precision:   83.3%
+  Recall:      85.7%
+  F1 Score:    84.5%
+  Avg Tokens:  2,847 per scenario
+  ────────────────────────────────
+  3 scenarios, 3 runs each (averaged)
+
+  PASS  Quality above threshold (F1 84.5% >= 70%)
+```
+
 ## Current Status
 
-`skillkit bench` is **fully working in v0.5.** Both the `@skillkit/benchmarks` package and the CLI are operational.
+`skillkit bench` is **fully working in v0.5.1.** Both the `@skillkit/benchmarks` package and the CLI are operational.
 
 | Capability | Status | Available In |
 |------------|--------|--------------|
@@ -826,6 +978,9 @@ $ skillkit bench review-bench.yaml
 | Regression detection | Shipped | v0.3 (`skillkit bench` + baselines API) |
 | Bench CLI with YAML config | **Shipped** | v0.5 (`skillkit bench <config.yaml>`) |
 | Real mode benchmarking | **Shipped** | v0.5 (`skillkit bench --real`) |
+| Real mode with provider selection | **Shipped** | v0.5.1 (`--real --provider claude-code`) |
+| Real mode with timeout control | **Shipped** | v0.5.1 (`--real --timeout 120000`) |
+| YAML config: corpus and invoke fields | **Shipped** | v0.5.1 |
 | CLI --compare, --save, --baseline | **Shipped** | v0.5 |
 | CLI --format (console, json, markdown) | **Shipped** | v0.5 |
 | HTML dashboard | Planned | v1.0 (`--format html`) |
@@ -839,7 +994,7 @@ The benchmarks package is at `packages/benchmarks/` in the repository.
 
 2. **Run in mock mode first.** `skillkit bench review-bench.yaml` validates your config and scores against the SKILL.md body. Fast and free.
 
-3. **Run in real mode.** `skillkit bench review-bench.yaml --real` invokes the actual AI model. Costs API tokens but gives real quality scores.
+3. **Run in real mode.** `skillkit bench review-bench.yaml --real --provider claude-code` invokes the actual AI model. Costs API tokens but gives real quality scores. Use `--provider` to choose between `claude-code`, `codex`, or `gemini-cli`. Use `--timeout` to control per-scenario timeout (default: 120000ms).
 
 4. **Save a baseline.** `skillkit bench review-bench.yaml --save baseline.json` records your scores. On future runs, use `--baseline baseline.json` to detect regressions.
 

@@ -14,12 +14,16 @@ import {
   formatBenchmarkResultJson,
   formatBenchmarkResultMarkdown,
 } from '@skillkit/benchmarks';
-import type { BenchmarkConfig } from '@skillkit/benchmarks';
+import type { BenchmarkConfig, BenchmarkRunOptions } from '@skillkit/benchmarks';
 
 function parseFlag(args: string[], flag: string): string | undefined {
   const index = args.indexOf(flag);
   if (index === -1 || index + 1 >= args.length) return undefined;
   return args[index + 1];
+}
+
+function hasFlag(args: string[], flag: string): boolean {
+  return args.includes(flag);
 }
 
 /**
@@ -36,9 +40,14 @@ export async function benchCommand(args: string[]): Promise<void> {
     console.log(`  --save <file>         Save results as baseline for future comparison`);
     console.log(`  --format <type>       Output format: console (default), json, markdown`);
     console.log(`  --runs <n>            Number of runs to average (default: from config or 1)`);
+    console.log(`  --real                Invoke skill via AI provider (default: mock mode)`);
+    console.log(`  --provider <name>     AI provider: claude-code (default), codex, gemini-cli`);
+    console.log(`  --timeout <ms>        Timeout per run in milliseconds (default: 120000)`);
     console.log(`\n${bold('Config YAML format:')}`);
     console.log(dim(`  name: review benchmark`));
     console.log(dim(`  skillPath: ./review/SKILL.md`));
+    console.log(dim(`  corpus: ./test-corpus        # directory with planted bugs (real mode)`));
+    console.log(dim(`  invoke: "/review main"       # skill invocation command (real mode)`));
     console.log(dim(`  groundTruth:`));
     console.log(dim(`    expectedFindings:`));
     console.log(dim(`      - file: src/api.ts`));
@@ -48,6 +57,7 @@ export async function benchCommand(args: string[]): Promise<void> {
     console.log(dim(`  runs: 3`));
     console.log(`\n${bold('Examples:')}`);
     console.log(`  skillkit bench review-bench.yaml`);
+    console.log(`  skillkit bench review-bench.yaml --real --provider claude-code`);
     console.log(`  skillkit bench review-bench.yaml --compare ./v2/SKILL.md`);
     console.log(`  skillkit bench review-bench.yaml --save baseline.json`);
     console.log(`  skillkit bench review-bench.yaml --baseline baseline.json`);
@@ -61,6 +71,9 @@ export async function benchCommand(args: string[]): Promise<void> {
   const baselineFile = parseFlag(args, '--baseline');
   const format = (parseFlag(args, '--format') ?? 'console') as 'console' | 'json' | 'markdown';
   const runsOverride = parseFlag(args, '--runs');
+  const isReal = hasFlag(args, '--real');
+  const provider = parseFlag(args, '--provider') ?? 'claude-code';
+  const timeout = parseFlag(args, '--timeout');
 
   let rawYaml: string;
   try {
@@ -81,16 +94,34 @@ export async function benchCommand(args: string[]): Promise<void> {
     return;
   }
 
-  // Resolve skill path relative to config file location
+  // Resolve paths relative to config file location
   const configDir = dirname(resolve(configPath));
   config.skillPath = resolve(configDir, config.skillPath);
+  if (config.corpus) {
+    config.corpus = resolve(configDir, config.corpus);
+  }
 
   if (runsOverride) {
     config.runs = parseInt(runsOverride, 10);
   }
 
+  // Build run options
+  const runOptions: BenchmarkRunOptions = { mock: !isReal };
+  if (isReal) {
+    runOptions.invoker = {
+      provider,
+      timeout: timeout ? parseInt(timeout, 10) : 120_000,
+    };
+  }
+
+  const modeLabel = isReal ? `real (provider: ${provider})` : 'mock';
+
   console.log(`\n${bold(config.name)}`);
   console.log(dim(`Skill: ${config.skillPath}`));
+  console.log(dim(`Mode: ${modeLabel}`));
+  if (isReal && config.corpus) {
+    console.log(dim(`Corpus: ${config.corpus}`));
+  }
   console.log(dim(`Runs: ${config.runs ?? 1}\n`));
 
   try {
@@ -98,7 +129,7 @@ export async function benchCommand(args: string[]): Promise<void> {
     if (compareSkillPath) {
       config.compareWith = resolve(configDir, compareSkillPath);
       console.log(dim(`Comparing against: ${config.compareWith}\n`));
-      const result = await runComparison(config);
+      const result = await runComparison(config, runOptions);
 
       if (format === 'json') {
         console.log(JSON.stringify(result, null, 2));
@@ -109,7 +140,7 @@ export async function benchCommand(args: string[]): Promise<void> {
     }
 
     // Standard benchmark
-    const result = await runBenchmark(config);
+    const result = await runBenchmark(config, runOptions);
 
     // Check regression
     if (baselineFile) {

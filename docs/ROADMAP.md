@@ -10,22 +10,23 @@
 | v0.4.0 | 2026-03-16 | `v0.4.0` | Adapters package (stack detector, convention detector, template engine, 3 built-in templates) |
 | v0.4.1 | 2026-03-16 | — | Bug fix: monorepo support for stack/convention detection, `{{else}}` in template engine |
 | v0.5.0 | 2026-03-17 | `v0.5.0` | Real skill execution (subprocess invocation, provider flags), working bench CLI (YAML config, --compare, --save, --baseline, --format) |
+| v0.5.1 | 2026-03-18 | `v0.5.1` | Real benchmark execution (--real flag), research lint preset (5 rules, research preset), --preset CLI flag |
 
 ## Current State — What Actually Works
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| `skillkit lint` | **Production-ready** | Tested against 17 real skills, found real issues |
+| `skillkit lint` | **Production-ready** | Tested against 17 real skills, found real issues. Research preset added in v0.5.1 |
 | `skillkit init` | **Production-ready** | Simple scaffolding, works as expected |
 | `skillkit test` (mock) | **Working** | Validates test structure, runs assertions against SKILL.md body as simulated output |
 | `skillkit test` (real) | **Working** | Supports --real --provider --command --timeout flags for subprocess skill invocation |
-| `skillkit bench` CLI | **Working** | Loads YAML config, runs benchmarks, supports --compare, --save, --baseline, --format |
+| `skillkit bench` CLI | **Working (mock + real)** | Supports --real --provider for actual AI invocation, scores real output |
 | `skillkit bench` API | **Working** | Math is correct (28 tests), CLI integration complete |
 | `skillkit adapt` | **Working** | Tested against real monorepo (microfrontends), correctly detects TS/Next/Tailwind/Vitest/Zustand |
 
 ## What's Next
 
-### v0.5 — Real Skill Execution (shipped)
+### v0.5 — Real Skill Execution (shipped, real bench mode done in v0.5.1)
 
 **Goal:** `skillkit test` and `skillkit bench` work against actual AI model output, not simulated.
 
@@ -36,7 +37,7 @@
 | Output capture | Medium | **Done** — captures full skill output for assertion evaluation |
 | Fixture lifecycle | Medium | **Done** — fixture manager clones to temp dirs, applies setup, cleans up |
 | Built-in fixtures | Medium | Planned for v0.6 |
-| Real mode for bench | Medium | **Done** — `skillkit bench` CLI loads YAML, runs benchmarks, scores output |
+| Real mode for bench | Medium | **Done** (v0.5.1) — `skillkit bench --real --provider claude-code --timeout 120000`, invokes skills via AI providers and scores real output |
 | Rate limiting | Easy | Planned for v0.6 |
 
 **Approach (implemented):**
@@ -111,7 +112,7 @@ test:
 | Area | Status | Details |
 |------|--------|---------|
 | Infrastructure over content | Core principle | skillkit ships tools for building skills, not a library of skills. Reference skills exist as examples only. |
-| Mock-first testing | **Partially addressed** | Mock mode validates structure and assertion logic. Real mode (actual AI invocation) not yet implemented. |
+| Mock-first testing | **Addressed** | Mock mode validates structure and assertion logic. Real mode (actual AI invocation) implemented in v0.5.1 for both test and bench. |
 | Measurable improvement only | Principle | The `/improve` example uses concrete, measurable criteria (file existence, git age, description overlap) — not subjective quality judgments. |
 | Maintenance sustainability | **Open risk** | Open source projects need active contributors. Community building is a priority. |
 | Spec compatibility | **Open risk** | The Agent Skills spec is evolving. Upstream changes could require updates to the linter and parser. |
@@ -139,14 +140,14 @@ test:
 
 ## Metrics
 
-### Current (v0.5.0)
+### Current (v0.5.1)
 
 | Metric | Value |
 |--------|-------|
 | Packages | 6 |
-| Tests | 195+ |
+| Tests | 247 (16 test files) |
 | Test execution time | ~350ms |
-| Lint rules | 15 |
+| Lint rules | 20 (4 presets) |
 | Assertion types | 8 |
 | Built-in templates | 3 |
 | Reference skills | 6 |

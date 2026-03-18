@@ -2,7 +2,7 @@
 
 ## What It Does
 
-`skillkit lint` scans your SKILL.md files and checks them for common mistakes, security risks, and best-practice violations. It reads the YAML frontmatter (the `---` block at the top) and the Markdown body, then runs 15 rules against each file. You get a clear report telling you exactly what to fix and why. Think of it as a spell-checker for your agent skills.
+`skillkit lint` scans your SKILL.md files and checks them for common mistakes, security risks, and best-practice violations. It reads the YAML frontmatter (the `---` block at the top) and the Markdown body, then runs 20 rules against each file. You get a clear report telling you exactly what to fix and why. Think of it as a spell-checker for your agent skills.
 
 ## Quick Start
 
@@ -30,7 +30,7 @@ skillkit lint ./examples/review
 
 ## What It Checks
 
-The linter has 15 rules organized into four categories.
+The linter has 20 rules organized into five categories.
 
 ### Spec Compliance
 
@@ -429,13 +429,39 @@ Markdown headings should not skip levels. Going from `#` (h1) straight to `###` 
 
 ---
 
+### Research
+
+These rules are designed for skills that run autonomous experiment loops. They are enabled by the `research` preset.
+
+#### 16. `valid-experiment-loop`
+
+Skills that run experiments must define a clear loop structure: hypothesis, action, observation, conclusion. Without this structure, autonomous experiments can drift without producing useful results.
+
+#### 17. `mutation-surface-bounded`
+
+The set of files or parameters that an experiment skill can mutate must be explicitly bounded. Unbounded mutation surfaces make experiments unreproducible and potentially dangerous.
+
+#### 18. `has-revert-strategy`
+
+Experiment skills must include instructions for reverting changes if an experiment fails or produces unexpected results. Without a revert strategy, failed experiments can leave the codebase in a broken state.
+
+#### 19. `has-resource-budget`
+
+Autonomous experiment skills must specify resource limits (time, tokens, iterations, or API calls). Without budgets, an experiment loop can run indefinitely and consume unbounded resources.
+
+#### 20. `no-remote-push`
+
+Experiment skills must not push to remote repositories. Autonomous experiments should only make local changes that can be reviewed before sharing.
+
+---
+
 ## Presets
 
-Presets control which rules run and at what severity level. There are three built-in presets.
+Presets control which rules run and at what severity level. There are four built-in presets.
 
 ### `recommended` (default)
 
-The default when you run `skillkit lint`. All 15 rules are active. Security and spec rules stay at their default severities (mostly errors and warnings). Style-oriented rules (`description-quality`, `has-argument-hint`, `consistent-headings`) report as info (they won't fail your build).
+The default when you run `skillkit lint`. All 15 base rules are active (research rules are off). Security and spec rules stay at their default severities (mostly errors and warnings). Style-oriented rules (`description-quality`, `has-argument-hint`, `consistent-headings`) report as info (they won't fail your build).
 
 **When to use:** Everyday development. Good balance between catching real problems and not overwhelming you with noise.
 
@@ -447,29 +473,44 @@ Every rule runs at its original default severity with no overrides at all. This 
 
 ### `minimal`
 
-Only the 5 spec-compliance rules run (`require-name`, `require-description`, `valid-frontmatter-fields`, `valid-allowed-tools`, `valid-model`). All security, best-practice, and performance rules are turned off.
+Only the 5 spec-compliance rules run (`require-name`, `require-description`, `valid-frontmatter-fields`, `valid-allowed-tools`, `valid-model`). All security, best-practice, performance, and research rules are turned off.
 
 **When to use:** When you are drafting a new skill and just want to make sure the frontmatter is valid. Not recommended for production use.
 
+### `research`
+
+All 15 base rules at their recommended severities, plus the 5 research rules (`valid-experiment-loop`, `mutation-surface-bounded`, `has-revert-strategy`, `has-resource-budget`, `no-remote-push`). Use this preset for skills that run autonomous experiment loops.
+
+```bash
+skillkit lint . --preset research
+```
+
+**When to use:** When building skills for autonomous experimentation, mutation testing, or any loop that modifies code and observes results.
+
 ### Comparison Table
 
-| Rule | `strict` | `recommended` | `minimal` |
-|------|----------|---------------|-----------|
-| `require-name` | error | error | error |
-| `require-description` | error | error | error |
-| `valid-frontmatter-fields` | warn | warn | warn |
-| `valid-allowed-tools` | warn | warn | warn |
-| `valid-model` | info | info | info |
-| `no-unrestricted-bash` | warn | warn | off |
-| `no-sensitive-paths` | error | error | off |
-| `no-data-exfiltration` | error | error | off |
-| `no-destructive-commands` | warn | warn | off |
-| `description-quality` | info | info | off |
-| `body-not-empty` | warn | warn | off |
-| `reasonable-token-estimate` | warn | warn | off |
-| `has-argument-hint` | info | info | off |
-| `no-hardcoded-paths` | warn | warn | off |
-| `consistent-headings` | info | info | off |
+| Rule | `strict` | `recommended` | `minimal` | `research` |
+|------|----------|---------------|-----------|------------|
+| `require-name` | error | error | error | error |
+| `require-description` | error | error | error | error |
+| `valid-frontmatter-fields` | warn | warn | warn | warn |
+| `valid-allowed-tools` | warn | warn | warn | warn |
+| `valid-model` | info | info | info | info |
+| `no-unrestricted-bash` | warn | warn | off | warn |
+| `no-sensitive-paths` | error | error | off | error |
+| `no-data-exfiltration` | error | error | off | error |
+| `no-destructive-commands` | warn | warn | off | warn |
+| `description-quality` | info | info | off | info |
+| `body-not-empty` | warn | warn | off | warn |
+| `reasonable-token-estimate` | warn | warn | off | warn |
+| `has-argument-hint` | info | info | off | info |
+| `no-hardcoded-paths` | warn | warn | off | warn |
+| `consistent-headings` | info | info | off | info |
+| `valid-experiment-loop` | off | off | off | warn |
+| `mutation-surface-bounded` | off | off | off | warn |
+| `has-revert-strategy` | off | off | off | warn |
+| `has-resource-budget` | off | off | off | warn |
+| `no-remote-push` | off | off | off | error |
 
 ---
 
@@ -689,7 +730,7 @@ $ skillkit lint ./examples
 Found 6 skill(s) in ./examples          # Found 6 SKILL.md files recursively
 
 examples/review/SKILL.md                 # First file
-  (checkmark) No issues found            # All 15 rules passed -- nothing to do
+  (checkmark) No issues found            # All rules passed -- nothing to do
 
 examples/ship/SKILL.md                   # Second file
   (checkmark) No issues found
