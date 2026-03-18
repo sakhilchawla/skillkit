@@ -7,7 +7,7 @@ import { initCommand } from './commands/init.js';
 import { adaptCommand } from './commands/adapt.js';
 import { benchCommand } from './commands/bench.js';
 
-const VERSION = '0.5.0';
+const VERSION = '0.5.1';
 
 const HELP = `${LOGO}
 ${bold('Usage:')} skillkit <command> [options]
@@ -29,9 +29,9 @@ ${bold('Examples:')}
   skillkit lint . --preset research   Lint with research preset (for experiment loops)
   skillkit init review                Create a new review skill
   skillkit test examples/             Run tests in examples directory
-  skillkit bench review-bench.yaml    Benchmark a skill's quality
-  skillkit bench config.yaml --real   Benchmark with real AI invocation
-  skillkit bench config.yaml --save b.json  Save results as baseline
+  skillkit bench review-bench.yaml                    Benchmark (mock mode)
+  skillkit bench config.yaml --real --provider claude-code  Benchmark with real AI
+  skillkit bench config.yaml --save b.json            Save results as baseline
   skillkit adapt component             Generate a /create-component skill for your project
 
 ${dim('Documentation: https://github.com/skillkit/skillkit')}

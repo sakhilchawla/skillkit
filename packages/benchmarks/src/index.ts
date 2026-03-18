@@ -3,6 +3,7 @@ export type {
   ExpectedFinding,
   GroundTruth,
   BenchmarkConfig,
+  BenchmarkRunOptions,
   BenchmarkScores,
   BenchmarkResult,
   ComparisonResult,

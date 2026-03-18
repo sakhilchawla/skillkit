@@ -45,7 +45,7 @@ npx skillkit adapt component
 
 ### 1. `skillkit lint` — Catch problems before they ship
 
-15 rules across 4 categories find real issues in your skills:
+20 rules across 4 categories find real issues in your skills:
 
 ```
 $ skillkit lint .claude/skills/
@@ -74,8 +74,14 @@ $ skillkit lint .claude/skills/
 | **Security** | 4 | Unrestricted Bash, sensitive paths (`.ssh`, `.env`), data exfiltration (`curl`), destructive commands (`rm -rf`, `DROP TABLE`) |
 | **Best practices** | 4 | Vague descriptions, missing argument hints, skipped heading levels, empty body |
 | **Performance** | 2 | Token budget exceeded (>5000 tokens), hardcoded absolute paths |
+| **Research** | 5 | Valid experiment loops, bounded mutation surfaces, revert strategies, resource budgets, no remote push |
 
-Three presets: **strict** (all rules as errors), **recommended** (balanced, default), **minimal** (spec compliance only).
+Four presets: **strict** (all rules as errors), **recommended** (balanced, default), **minimal** (spec compliance only), **research** (autonomous experiment loops).
+
+```bash
+# Lint with the research preset for autonomous experiment skills
+skillkit lint . --preset research
+```
 
 Configure via `skillkit.config.yaml`:
 ```yaml
@@ -181,14 +187,14 @@ Plus **A/B comparison** (skill v1 vs v2 on same inputs) and **regression trackin
 
 Three output formats: colored console, JSON for CI, markdown for PR comments.
 
-**CLI is fully working in v0.5:**
+**CLI is fully working in v0.5.1:**
 
 ```bash
-# Run a benchmark from YAML config
+# Run a benchmark from YAML config (mock mode, default)
 skillkit bench review-bench.yaml
 
-# Run with real AI invocation
-skillkit bench review-bench.yaml --real
+# Run with real AI execution — scores actual output against ground truth
+skillkit bench config.yaml --real --provider claude-code
 
 # A/B compare two skills
 skillkit bench review-bench.yaml --compare ./v2/SKILL.md
@@ -310,7 +316,7 @@ Each includes a SKILL.md, test definition (`.test.yaml`), and a design document 
 | Package | What it does |
 |---------|-------------|
 | **@skillkit/core** | SKILL.md parser, TypeScript types, Agent Skills spec validation |
-| **@skillkit/linter** | 15 lint rules, 3 presets (strict/recommended/minimal), engine |
+| **@skillkit/linter** | 20 lint rules, 4 presets (strict/recommended/minimal/research), engine |
 | **@skillkit/test-harness** | YAML test loader, 8 assertion matchers, test runner, reporters |
 | **@skillkit/benchmarks** | Precision/recall scorer, A/B comparator, regression tracker |
 | **@skillkit/adapters** | Stack detector, convention detector, template engine, 3 templates |
@@ -344,6 +350,7 @@ Claude Code · Codex CLI · Gemini CLI · Cursor · VS Code · GitHub Copilot ·
 | v0.3 | `bench` with quality scoring and regression tracking | Shipped |
 | v0.4 | `adapt` with repo scanning, stack detection, skill generation | Shipped |
 | v0.5 | Real skill execution (subprocess invocation, fixture repos), working bench CLI | Shipped |
+| v0.5.1 | Real bench execution (precision/recall/F1 scoring), research lint preset (5 new rules, 20 total), 247 tests | Shipped |
 | v0.6 | Plugin API for custom rules, scenarios, templates | Planned |
 | v0.7 | npm publish (`npm install -g skillkit`) | Planned |
 | v0.8 | CI/CD integration (GitHub Actions, pre-commit hooks) | Planned |
@@ -358,7 +365,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for the full plan with task breakdowns an
 | Guide | What it covers |
 |-------|---------------|
 | [Getting Started](docs/GUIDE_OVERVIEW.md) | What skillkit is, what Agent Skills are, your first 5 minutes |
-| [Linting Skills](docs/GUIDE_LINT.md) | All 15 rules with bad/good examples, presets, CI/CD setup |
+| [Linting Skills](docs/GUIDE_LINT.md) | All 20 rules with bad/good examples, presets, CI/CD setup |
 | [Testing Skills](docs/GUIDE_TEST.md) | YAML test format, all assertion types, fixtures, mock vs real mode |
 | [Benchmarking Skills](docs/GUIDE_BENCH.md) | Precision/recall scoring, A/B comparison, regression tracking |
 | [Adapting Skills](docs/GUIDE_ADAPT.md) | Stack detection, templates, generating project-specific skills |
@@ -378,7 +385,7 @@ cd skillkit
 npm install
 
 npm run build          # TypeScript build
-npm test               # 195+ unit tests (~350ms)
+npm test               # 247+ unit tests (~350ms)
 npm run test:watch     # Watch mode
 npm run test:coverage  # Coverage report
 npm run lint:self      # Lint the reference skills
