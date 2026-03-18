@@ -10,6 +10,7 @@
     { "path": "../core" },
     { "path": "../linter" },
     { "path": "../test-harness" },
-    { "path": "../adapters" }
+    { "path": "../adapters" },
+    { "path": "../benchmarks" }
   ]
 }
