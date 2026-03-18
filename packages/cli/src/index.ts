@@ -13,7 +13,7 @@ const HELP = `${LOGO}
 ${bold('Usage:')} skillkit <command> [options]
 
 ${bold('Commands:')}
-  ${cyan('lint')} [path]              Lint SKILL.md files against spec and best practices
+  ${cyan('lint')} [path] [--preset]    Lint SKILL.md files (presets: strict, recommended, minimal, research)
   ${cyan('test')} [path]              Run skill test definitions
   ${cyan('bench')} <config.yaml>       Benchmark skill quality (precision/recall/F1)
   ${cyan('init')} <name>              Scaffold a new skill
@@ -26,6 +26,7 @@ ${bold('Options:')}
 ${bold('Examples:')}
   skillkit lint .                     Lint all skills in current directory
   skillkit lint ~/.claude/skills      Lint global skills
+  skillkit lint . --preset research   Lint with research preset (for experiment loops)
   skillkit init review                Create a new review skill
   skillkit test examples/             Run tests in examples directory
   skillkit bench review-bench.yaml    Benchmark a skill's quality

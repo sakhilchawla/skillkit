@@ -1,5 +1,11 @@
 import type { LintSeverity } from '../types.js';
 
-/** Strict preset: all rules at their default severity */
-export const strict: Record<string, LintSeverity | 'off'> = {};
-// Empty = use each rule's default severity (no overrides)
+/** Strict preset: all standard rules at their default severity, research rules off */
+export const strict: Record<string, LintSeverity | 'off'> = {
+  // Research rules are opt-in only (use 'research' preset)
+  'valid-experiment-loop': 'off',
+  'mutation-surface-bounded': 'off',
+  'has-revert-strategy': 'off',
+  'has-resource-budget': 'off',
+  'no-remote-push': 'off',
+};

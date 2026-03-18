@@ -14,6 +14,11 @@ import { reasonableTokenEstimate } from './reasonable-token-estimate.js';
 import { hasArgumentHint } from './has-argument-hint.js';
 import { noHardcodedPaths } from './no-hardcoded-paths.js';
 import { consistentHeadings } from './consistent-headings.js';
+import { validExperimentLoop } from './valid-experiment-loop.js';
+import { mutationSurfaceBounded } from './mutation-surface-bounded.js';
+import { hasRevertStrategy } from './has-revert-strategy.js';
+import { hasResourceBudget } from './has-resource-budget.js';
+import { noRemotePush } from './no-remote-push.js';
 
 /** All available lint rules */
 export const allRules: LintRule[] = [
@@ -35,6 +40,12 @@ export const allRules: LintRule[] = [
   hasArgumentHint,
   noHardcodedPaths,
   consistentHeadings,
+  // Research (autonomous experiment loops)
+  validExperimentLoop,
+  mutationSurfaceBounded,
+  hasRevertStrategy,
+  hasResourceBudget,
+  noRemotePush,
 ];
 
 export {
@@ -53,4 +64,9 @@ export {
   hasArgumentHint,
   noHardcodedPaths,
   consistentHeadings,
+  validExperimentLoop,
+  mutationSurfaceBounded,
+  hasRevertStrategy,
+  hasResourceBudget,
+  noRemotePush,
 };

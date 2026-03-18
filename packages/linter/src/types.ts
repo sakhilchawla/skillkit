@@ -52,6 +52,6 @@ export interface LintReport {
 
 /** Lint configuration */
 export interface LintConfig {
-  preset: 'strict' | 'recommended' | 'minimal';
+  preset: 'strict' | 'recommended' | 'minimal' | 'research';
   rules?: Record<string, LintSeverity | 'off'>;
 }

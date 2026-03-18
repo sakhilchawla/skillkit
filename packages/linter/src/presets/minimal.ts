@@ -12,4 +12,10 @@ export const minimal: Record<string, LintSeverity | 'off'> = {
   'has-argument-hint': 'off',
   'no-hardcoded-paths': 'off',
   'consistent-headings': 'off',
+  // Research rules are opt-in only (use 'research' preset)
+  'valid-experiment-loop': 'off',
+  'mutation-surface-bounded': 'off',
+  'has-revert-strategy': 'off',
+  'has-resource-budget': 'off',
+  'no-remote-push': 'off',
 };
