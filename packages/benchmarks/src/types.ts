@@ -4,6 +4,10 @@ export interface ExpectedFinding {
   line?: number;
   type: string; // 'security' | 'logic' | 'performance' | 'style' | string
   description: string;
+  /** Optional regex pattern for flexible matching (overrides keyword matching) */
+  pattern?: string;
+  /** Optional explicit keywords to match (overrides auto-extracted keywords from description) */
+  keywords?: string[];
 }
 
 /** Ground truth for a benchmark scenario */

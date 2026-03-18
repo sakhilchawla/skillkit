@@ -37,7 +37,7 @@ export interface InvocationResult {
  * Each entry maps a provider name to its base command and flags.
  */
 export const PROVIDER_COMMANDS: Record<string, string[]> = {
-  'claude-code': ['claude', '--print', '--skill'],
+  'claude-code': ['claude', '-p'],
   'codex': ['codex', '--skill'],
   'gemini-cli': ['gemini', '--skill'],
 };
