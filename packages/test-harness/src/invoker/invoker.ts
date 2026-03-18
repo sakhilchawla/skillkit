@@ -56,9 +56,14 @@ export async function invokeSkill(
 ): Promise<InvocationResult> {
   const commandParts = resolveCommand(config);
   const executable = commandParts[0];
-  const args = [...commandParts.slice(1), skillPath, invokeArgs];
   const timeout = config.timeout ?? 120_000;
   const cwd = config.cwd ?? resolvePath('.');
+
+  // Claude Code uses -p "prompt" — combine skill invocation into a single prompt
+  const isClaude = config.provider === 'claude-code' || executable === 'claude';
+  const args = isClaude
+    ? [...commandParts.slice(1), `Run ${invokeArgs} using the skill at ${skillPath}`]
+    : [...commandParts.slice(1), skillPath, invokeArgs];
 
   const startTime = performance.now();
 
