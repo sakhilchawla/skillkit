@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { SkillParseResult } from '@skillkit/core';
+import type { SkillParseResult } from '@skillkit-llm/core';
 import { LintEngine } from '../engine.js';
 import { LintSeverity } from '../types.js';
 

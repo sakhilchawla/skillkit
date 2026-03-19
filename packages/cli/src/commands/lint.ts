@@ -1,5 +1,5 @@
-import type { LintConfig } from '@skillkit/linter';
-import { LintEngine } from '@skillkit/linter';
+import type { LintConfig } from '@skillkit-llm/linter';
+import { LintEngine } from '@skillkit-llm/linter';
 import { findSkillFiles } from '../utils/finder.js';
 import { formatLintReport, bold, red, green, dim } from '../utils/formatter.js';
 

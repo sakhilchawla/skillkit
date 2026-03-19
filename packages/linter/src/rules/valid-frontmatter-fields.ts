@@ -1,6 +1,6 @@
 import type { LintRule, LintContext, LintResult } from '../types.js';
 import { LintSeverity, LintCategory } from '../types.js';
-import { isValidFrontmatterField } from '@skillkit/core';
+import { isValidFrontmatterField } from '@skillkit-llm/core';
 
 /** All frontmatter fields must be recognized by the Agent Skills spec */
 export const validFrontmatterFields: LintRule = {

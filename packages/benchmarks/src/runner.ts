@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { scoreOutput } from './scorer/scorer.js';
 import { compareSkills } from './comparator/comparator.js';
-import { invokeSkill } from '@skillkit/test-harness';
-import type { InvokerConfig } from '@skillkit/test-harness';
+import { invokeSkill } from '@skillkit-llm/test-harness';
+import type { InvokerConfig } from '@skillkit-llm/test-harness';
 import type {
   BenchmarkConfig,
   BenchmarkResult,

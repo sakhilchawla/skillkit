@@ -1,6 +1,6 @@
 import type { LintRule, LintContext, LintResult } from '../types.js';
 import { LintSeverity, LintCategory } from '../types.js';
-import { parseAllowedTools, isKnownTool } from '@skillkit/core';
+import { parseAllowedTools, isKnownTool } from '@skillkit-llm/core';
 
 /** allowed-tools must be comma-separated known tool names */
 export const validAllowedTools: LintRule = {

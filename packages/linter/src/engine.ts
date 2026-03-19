@@ -1,5 +1,5 @@
-import { parseSkillFile } from '@skillkit/core';
-import type { SkillParseResult } from '@skillkit/core';
+import { parseSkillFile } from '@skillkit-llm/core';
+import type { SkillParseResult } from '@skillkit-llm/core';
 import type { LintConfig, LintContext, LintReport, LintResult, LintRule } from './types.js';
 import { LintSeverity } from './types.js';
 import { allRules } from './rules/index.js';

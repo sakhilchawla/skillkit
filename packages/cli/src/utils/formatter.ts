@@ -1,4 +1,4 @@
-import type { LintReport } from '@skillkit/linter';
+import type { LintReport } from '@skillkit-llm/linter';
 
 // ANSI color codes (no dependencies)
 const RESET = '\x1b[0m';
