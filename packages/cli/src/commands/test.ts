@@ -1,8 +1,8 @@
 import { findTestFiles } from '../utils/finder.js';
 import { bold, dim, green, red, yellow, cyan } from '../utils/formatter.js';
-import { runTests } from '@skillkit/test-harness';
-import { formatTestReport } from '@skillkit/test-harness';
-import type { TestReport } from '@skillkit/test-harness';
+import { runTests } from '@skillkit-llm/test-harness';
+import { formatTestReport } from '@skillkit-llm/test-harness';
+import type { TestReport } from '@skillkit-llm/test-harness';
 
 /**
  * Parse a flag value from the args array.

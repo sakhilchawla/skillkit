@@ -1,6 +1,6 @@
 {
-  "name": "@skillkit/cli",
-  "version": "0.1.0",
+  "name": "@skillkit-llm/cli",
+  "version": "0.6.0",
   "description": "CLI for building, testing, and linting Agent Skills",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,20 +15,35 @@
   "bin": {
     "skillkit": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@skillkit/core": "*",
-    "@skillkit/linter": "*",
-    "@skillkit/test-harness": "*",
-    "@skillkit/adapters": "*",
-    "@skillkit/benchmarks": "*",
+    "@skillkit-llm/core": "^0.6.0",
+    "@skillkit-llm/linter": "^0.6.0",
+    "@skillkit-llm/test-harness": "^0.6.0",
+    "@skillkit-llm/adapters": "^0.6.0",
+    "@skillkit-llm/benchmarks": "^0.6.0",
     "yaml": "^2.7.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakhilchawla/skillkit",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/sakhilchawla/skillkit",
+  "bugs": {
+    "url": "https://github.com/sakhilchawla/skillkit/issues"
   },
   "license": "MIT"
 }

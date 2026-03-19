@@ -13,8 +13,8 @@ import {
   formatRegressionResult,
   formatBenchmarkResultJson,
   formatBenchmarkResultMarkdown,
-} from '@skillkit/benchmarks';
-import type { BenchmarkConfig, BenchmarkRunOptions } from '@skillkit/benchmarks';
+} from '@skillkit-llm/benchmarks';
+import type { BenchmarkConfig, BenchmarkRunOptions } from '@skillkit-llm/benchmarks';
 
 function parseFlag(args: string[], flag: string): string | undefined {
   const index = args.indexOf(flag);

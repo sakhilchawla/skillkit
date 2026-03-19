@@ -19,11 +19,11 @@ export async function adaptCommand(args: string[]): Promise<void> {
 
   try {
     // Dynamic import to avoid hard failure if adapters isn't installed
-    const { adaptAndSave, detectStack, listTemplateNames } = await import('@skillkit/adapters');
+    const { adaptAndSave, detectStack, listTemplateNames } = await import('@skillkit-llm/adapters');
 
     // Validate template name
     const available = listTemplateNames();
-    const { resolveTemplate } = await import('@skillkit/adapters');
+    const { resolveTemplate } = await import('@skillkit-llm/adapters');
     const template = resolveTemplate(templateName);
     if (!template) {
       console.error(`\n${red(`Unknown template: "${templateName}"`)}`);

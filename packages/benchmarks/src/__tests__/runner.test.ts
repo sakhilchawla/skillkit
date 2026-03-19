@@ -3,11 +3,11 @@ import { runBenchmark, runComparison } from '../runner.js';
 import type { BenchmarkConfig, BenchmarkRunOptions } from '../types.js';
 
 // Mock the invokeSkill function from test-harness
-vi.mock('@skillkit/test-harness', () => ({
+vi.mock('@skillkit-llm/test-harness', () => ({
   invokeSkill: vi.fn(),
 }));
 
-import { invokeSkill } from '@skillkit/test-harness';
+import { invokeSkill } from '@skillkit-llm/test-harness';
 const mockInvokeSkill = vi.mocked(invokeSkill);
 
 beforeEach(() => {

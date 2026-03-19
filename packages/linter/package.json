@@ -1,6 +1,6 @@
 {
-  "name": "@skillkit/linter",
-  "version": "0.1.0",
+  "name": "@skillkit-llm/linter",
+  "version": "0.6.0",
   "description": "Lint and validate Agent Skills against the spec and best practices",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,15 +12,30 @@
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@skillkit/core": "*"
+    "@skillkit-llm/core": "^0.6.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakhilchawla/skillkit",
+    "directory": "packages/linter"
+  },
+  "homepage": "https://github.com/sakhilchawla/skillkit",
+  "bugs": {
+    "url": "https://github.com/sakhilchawla/skillkit/issues"
   },
   "license": "MIT"
 }

@@ -1,6 +1,6 @@
 {
-  "name": "@skillkit/benchmarks",
-  "version": "0.5.1",
+  "name": "@skillkit-llm/benchmarks",
+  "version": "0.6.0",
   "description": "Benchmark scoring, comparison, and regression tracking for Agent Skills",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,17 +12,32 @@
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@skillkit/core": "*",
-    "@skillkit/test-harness": "*",
+    "@skillkit-llm/core": "^0.6.0",
+    "@skillkit-llm/test-harness": "^0.6.0",
     "yaml": "^2.7.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakhilchawla/skillkit",
+    "directory": "packages/benchmarks"
+  },
+  "homepage": "https://github.com/sakhilchawla/skillkit",
+  "bugs": {
+    "url": "https://github.com/sakhilchawla/skillkit/issues"
   },
   "license": "MIT"
 }
