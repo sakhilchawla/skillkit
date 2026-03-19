@@ -91,11 +91,11 @@ export async function testCommand(args: string[]): Promise<void> {
   const reports: TestReport[] = [];
 
   // Build run options — in real mode, pass invoker config
-  const runOptions: { mock: boolean; timeout?: number; provider?: string; command?: string } = { mock };
+  const runOptions: { mock: boolean; timeout?: number; invoker?: { provider: string; command?: string; timeout?: number } } = { mock };
   if (!mock) {
     runOptions.timeout = timeout;
-    runOptions.provider = provider;
-    if (command) runOptions.command = command;
+    runOptions.invoker = { provider, timeout };
+    if (command) runOptions.invoker.command = command;
   }
 
   for (const file of files) {
