@@ -1,6 +1,6 @@
 {
-  "name": "@skillkit/adapters",
-  "version": "0.4.0",
+  "name": "@skillkit-llm/adapters",
+  "version": "0.6.0",
   "description": "Detect tech stacks and generate project-specific skills from templates",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,16 +12,31 @@
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@skillkit/core": "*",
+    "@skillkit-llm/core": "^0.6.0",
     "yaml": "^2.7.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakhilchawla/skillkit",
+    "directory": "packages/adapters"
+  },
+  "homepage": "https://github.com/sakhilchawla/skillkit",
+  "bugs": {
+    "url": "https://github.com/sakhilchawla/skillkit/issues"
   },
   "license": "MIT"
 }

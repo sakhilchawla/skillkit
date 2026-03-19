@@ -7,7 +7,7 @@ import { initCommand } from './commands/init.js';
 import { adaptCommand } from './commands/adapt.js';
 import { benchCommand } from './commands/bench.js';
 
-const VERSION = '0.5.1';
+const VERSION = '0.6.0';
 
 const HELP = `${LOGO}
 ${bold('Usage:')} skillkit <command> [options]

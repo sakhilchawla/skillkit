@@ -1,6 +1,6 @@
 {
-  "name": "@skillkit/test-harness",
-  "version": "0.2.0",
+  "name": "@skillkit-llm/test-harness",
+  "version": "0.6.0",
   "description": "Test harness for Agent Skills — YAML-driven scenario testing",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,16 +12,32 @@
       "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "fixtures",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@skillkit/core": "*",
+    "@skillkit-llm/core": "^0.6.0",
     "yaml": "^2.7.0"
   },
   "engines": {
     "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sakhilchawla/skillkit",
+    "directory": "packages/test-harness"
+  },
+  "homepage": "https://github.com/sakhilchawla/skillkit",
+  "bugs": {
+    "url": "https://github.com/sakhilchawla/skillkit/issues"
   },
   "license": "MIT"
 }
